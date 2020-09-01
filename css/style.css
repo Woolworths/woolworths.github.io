@@ -1,0 +1,57 @@
+body {
+  color: #bfe66a;
+  background-color: #202020;
+}
+
+a:link {
+  color: #79bef0;
+}
+
+a:visited {
+  color: #79bef0;
+}
+
+a:hover {
+  filter: brightness(80%);
+}
+
+a:active {
+  filter: brightness(60%);
+}
+
+.header {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px dashed;
+}
+
+.header-list {
+  margin-bottom: 0px;
+  color: #777777;
+}
+
+.header-list li {
+  padding: 0px;
+  border: 0px;
+  margin-right: 0px !important;
+}
+
+.header-list li > a {
+  padding: 0px;
+  border: 0px;
+}
+
+.header-list li::after {
+  padding-left: 8px;
+  padding-right: 8px;
+  content: "|";
+}
+
+.header-list li:last-child::after {
+  content: "";
+}
+
+.content {
+  padding-top: 1.5rem;
+}
+
