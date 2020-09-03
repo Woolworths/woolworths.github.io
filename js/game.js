@@ -1,3 +1,5 @@
+import * as sprites from '/js/sprites.js';
+
 const jumpHeight = 7;
 const damping = 1/30;
 
@@ -79,27 +81,26 @@ class Tree {
             const diff = (now - this.prevTime) / 1000 * 24;
 
             this.x = this.baseX - Math.round(diff);
-            console.log(diff);
         } else {
             this.prevTime = Date.now();
         }
     }
 }
 
-const game = document.getElementById('game');
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
 var matrix = [];
 
 var globalId;
 var lastUpdate = Date.now();
 
-var width_l = 75;
-var height_l = 20;
-const framesPerSecond = 30;
+var width_l = 95;
+var height_l = 25;
+const framesPerSecond = 60;
 
 var obstacles = []; // [Obstacles()]
-var player = new Player(8, 17);
-
+var player = new Player(0, 7);
 
 function XYInBounds(x, y) {
     if (y >= 0 && y <= height_l - 1 && x >= 0 && x <= width_l - 1)
@@ -113,28 +114,44 @@ function initMatrix() {
         matrix[x] = [];
 
         for (let y = 0; y < width_l; y++) {
-            matrix[x][y] = ' . ';
+            matrix[x][y] = '.';
         }
     }
 }
 
 function printMatrix() {
-    t0 = performance.now();
+    const t0 = performance.now();
 
-    var c = document.createDocumentFragment();
+    var c = '';
 
     for (let x = 0; x < height_l; x++) {
         for (let y = 0; y < width_l; y++) {
-            c.append(matrix[x][y]);
+            c += matrix[x][y];
         }
 
-        c.append(document.createElement("br"));
+        c += '\n';
     }
 
-    game.innerHTML = '';
-    game.appendChild(c);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    t1 = performance.now();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = "12px Courier New";
+
+    ctx.fillText(c, 0, 12);
+
+    /*ctx.fillStyle = '#ffffff';
+
+    canvasTxt.default.font = "Courier New";
+    canvasTxt.default.fontSize = 10;
+
+    canvasTxt.default.drawText(ctx, c, 0, 0, canvas.width, canvas.height);*/
+
+    //game.innerHTML = '';
+    //game.appendChild(c);
+
+        //game.appendChild(canvas);
+
+    const t1 = performance.now();
 
     console.log(`Time taken: ${t1 - t0}`);
 }
@@ -160,39 +177,47 @@ function updateMatrix() {
 }
 
 function drawPlayer(x, y) {
-    if (XYInBounds(x - 1, y)) {
-        matrix[y][x - 1] = '';
-    }
-
-    if (XYInBounds(x, y)) {
-        matrix[y][x] = ' 0 ';
+    /*if (XYInBounds(x, y)) {
+        matrix[y][x] = '0';
     }
 
     if (XYInBounds(x + 1, y)) {
-        matrix[y][x + 1] = ' . ';
+        matrix[y][x + 1] = '.';
     } 
 
     if (XYInBounds(x + 2, y)) {
-        matrix[y][x + 2] = ' o ';
+        matrix[y][x + 2] = 'o';
+    }*/
+
+    //console.log(sprites.slime);
+
+    for (let i = sprites.slime.length - 1; i >= 0; i--) {
+        const line = sprites.slime[i];
+
+        for (let j = line.length - 1; j >= 0; j--) {
+            if (XYInBounds(j + x, i + y)) {
+                matrix[i + y][j + x] = sprites.slime[i][j];
+            }
+        }
     }
 }
 
 function drawTree(x, y) {
     if (XYInBounds(x, y)) {
-        matrix[y][x] = ' | ';
+        matrix[y][x] = '|';
     }
 
     if (XYInBounds(x, y - 1)) {
-        matrix[y - 1][x] = ' | ';
+        matrix[y - 1][x] = '|';
     } 
 
     if (XYInBounds(x, y - 2)) {
-        matrix[y - 2][x] = ' | ';
+        matrix[y - 2][x] = '|';
     }
 }
 
 function randomObjectGeneration() {
-    rng = Math.random();
+    const rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 2)) {
         obstacles.push(new Tree(width_l - 1, height_l - 3));
