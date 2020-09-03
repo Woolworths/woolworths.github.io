@@ -1,7 +1,7 @@
 import * as sprites from '/js/sprites.js';
 
 const jumpHeight = 15;
-const damping = 1/30;
+const damping = 1/75;
 
 class Player {
     constructor(x, y) {
@@ -72,7 +72,8 @@ class Player {
             if (a < half) {
                 if (this.jumpY < jumpHeight * 2/3) {
                     return sprites.upSlime;
-                }            } else {
+                }
+            } else {
                 if (this.jumpY < jumpHeight * 9/10) {
                     return sprites.downSlime;
                 }
@@ -101,7 +102,7 @@ class Tree {
         const now = Date.now();
 
         if (this.prevTime) {
-            const diff = (now - this.prevTime) / 1000 * 24;
+            const diff = (now - this.prevTime) / 1000 * 35;
 
             this.x = this.baseX - Math.round(diff);
         } else {
@@ -123,7 +124,7 @@ var canvasHeight = canvas.height;
 
 var widthL = 140;
 var heightL = 40;
-const framesPerSecond = 60;
+const framesPerSecond = 90;
 
 var obstacles = []; // [Obstacles()]
 var player = new Player(0, 25);
