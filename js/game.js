@@ -27,9 +27,6 @@ class Player {
     }
 
     tick() {
-        console.log(this.y);
-        console.log(this.baseY);
-
         if (this.jumping) {
             const newX = this.baseX - this.jumpX;
             const newY = this.baseY - this.jumpY;
@@ -48,7 +45,6 @@ class Player {
                 this.jumpTime = null;
             }
         } else {
-            this.x = this.baseX;
             this.y = this.baseY;
         }
     }
@@ -128,22 +124,52 @@ class Tree {
     }
 }
 
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+// From: https://stackoverflow.com/a/15666143/3223010
+const PIXEL_RATIO = (function () {
+    var ctx = document.createElement("canvas").getContext("2d"),
+        dpr = window.devicePixelRatio || 1,
+        bsr = ctx.webkitBackingStorePixelRatio ||
+              ctx.mozBackingStorePixelRatio ||
+              ctx.msBackingStorePixelRatio ||
+              ctx.oBackingStorePixelRatio ||
+              ctx.backingStorePixelRatio || 1;
+
+    return dpr / bsr;
+})();
+
+const createHiDPICanvas = function(w, h, ratio) {
+    if (!ratio) { ratio = PIXEL_RATIO; }
+    var c = document.createElement("canvas");
+    c.width = w * ratio;
+    c.height = h * ratio;
+    c.style.width = w + "px";
+    c.style.height = h + "px";
+    c.getContext("2d").setTransform(ratio, 0, 0, ratio, 0, 0);
+    return c;
+}
 
 var matrix = [];
 
 var globalId;
 var lastUpdate = Date.now();
 
-var canvasWidth = canvas.height;
-var canvasHeight = canvas.height;
+var canvasWidth = 700;
+var canvasHeight = 500;
+
+const canvas = createHiDPICanvas(canvasWidth, canvasHeight);
+const ctx = canvas.getContext('2d');
+
+const el = document.getElementById('game');
+el.appendChild(canvas);
 
 const fontSize = 4;
 const lineHeight = fontSize + 1.5;
 
-var widthL = 2 * Math.round(canvasWidth / fontSize);
+var widthL = Math.round(canvasWidth * (414.5 / 1000));
 var heightL = Math.round(canvasHeight / lineHeight);
+
+console.log(widthL);
+
 const framesPerSecond = 90;
 
 const heightFromBottom = 20;
@@ -185,20 +211,8 @@ function printMatrix() {
             c += matrix[x][y];
         }
 
-        ctx.fillText(c, 0, lineHeight * x);
+        ctx.fillText(c, 0.5, lineHeight * x);
     }
-
-    /*ctx.fillStyle = '#ffffff';
-
-    canvasTxt.default.font = "Courier New";
-    canvasTxt.default.fontSize = 10;
-
-    canvasTxt.default.drawText(ctx, c, 0, 0, canvas.width, canvas.height);*/
-
-    //game.innerHTML = '';
-    //game.appendChild(c);
-
-        //game.appendChild(canvas);
 
     const t1 = performance.now();
 
@@ -277,12 +291,19 @@ function randomObjectGeneration() {
 }
 
 function keydown(e) {
+    e.preventDefault();
+
     if (e.keyCode === 38 || e.keyCode === 32) {
         player.jump();
     }
 }
 
+function touchstart(e) {
+    player.jump();
+}
+
 document.addEventListener('keydown', keydown);
+document.addEventListener('touchstart', touchstart);
 
 function l() {
     const now = Date.now();
