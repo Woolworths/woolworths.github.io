@@ -32,9 +32,9 @@ class Player {
     // Update the x and y values
     tick() {
         if (this.jumping) {
-            const newY = this.baseY - this.jumpY;
+            const newY = this.baseY + this.jumpY;
 
-            if (newY <= this.baseY) {
+            if (newY > this.baseY) {
                 this.y = newY;
             } else {
                 this.y = this.baseY;
@@ -179,7 +179,7 @@ class Tree {
         const s = Math.random();
 
         if (s < 0.1) {
-            this.height = 3;
+            this.height = 19;
         } else if (s < 0.2) {
             this.height = 4;
         } else if (s < 0.4) {
@@ -192,13 +192,8 @@ class Tree {
             this.height = 11;
         }
 
-        if (!x || !y) {
-            this.x = widthL - 1;
-            this.y = heightL - heightFromBottom - this.height;
-        } else {
-            this.x = x;
-            this.y = y;
-        }
+        this.x = x;
+        this.y = y;
 
         this.prevTime = undefined;
 
@@ -336,10 +331,10 @@ var heightL = Math.round(canvasHeight / lineHeight);
 
 const framesPerSecond = 120;
 
-const heightFromBottom = 20;
+const heightFromBottom = 15;
 
 var obstacles = []; // [Obstacles()]
-var player = new Player(30, 60);
+var player = new Player(15, heightFromBottom);
 
 function XYInBounds(x, y) {
     if (y >= 0 && y <= heightL - 1 && x >= 0 && x <= widthL - 1)
@@ -435,11 +430,14 @@ function drawSprite(sprite, x, y, colour) {
         const line = sprite[i];
 
         for (let j = line.length - 1; j >= 0; j--) {
-            if (XYInBounds(j + x, i + y) && sprite[i][j] && sprite[i][j] !== '.') {
-                matrix[i + y][x + j] = sprite[i][j];
+            if (XYInBounds(j + x, heightL - (i + y) - 1) &&
+                sprite[sprite.length - i - 1][j] &&
+                sprite[sprite.length - i - 1][j] !== '.') {
+
+                matrix[heightL - (i + y) - 1][x + j] = sprite[sprite.length - i - 1][j];
 
                 if (colour)
-                    colourMatrix[i + y][x + j] = colour;
+                    colourMatrix[heightL - (i + y) - 1][x + j] = colour;
             }
         }
     }
@@ -449,13 +447,13 @@ function randomObjectGeneration() {
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 0.1)) {
-        obstacles.push(new Ground(widthL - 1, heightL - heightFromBottom + 2));
+        obstacles.push(new Ground(widthL - 1, heightFromBottom - 2));
     }
 
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 1)) {
-        obstacles.push(new Tree());
+        obstacles.push(new Tree(widthL - 1, heightFromBottom + 2));
     }
 
     var rng = Math.random();
