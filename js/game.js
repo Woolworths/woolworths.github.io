@@ -12,6 +12,9 @@ class Player {
         this.baseY = y;
 
         this.jumpTime = undefined;
+
+        this.runCount = 0;
+        this.runTime = undefined;
     }
 
     get height() {
@@ -26,27 +29,45 @@ class Player {
         }
     }
 
+    // Update the x and y values
     tick() {
         if (this.jumping) {
-            const newX = this.baseX - this.jumpX;
             const newY = this.baseY - this.jumpY;
-
-            if (newX <= this.baseX) {
-                this.x = newX;
-            } else {
-                this.x = this.baseX;
-            }
 
             if (newY <= this.baseY) {
                 this.y = newY;
             } else {
                 this.y = this.baseY;
-
                 this.jumpTime = null;
             }
         } else {
             this.y = this.baseY;
+            // buggy i think: this.jumpTime = null; could also do a counter like run
         }
+    }
+
+    get canRun() {
+        return this.baseX === this.x;
+    }
+
+    get runStep() {
+        if (this.runTime) {
+            const interval = 75;
+            const states = 4;
+
+            const a = (Date.now() - this.runTime);
+
+            if (a > interval) {
+                this.runCount++;
+                this.runCount = this.runCount % states;
+
+                this.runTime = Date.now();
+            }
+        } else {
+            this.runTime = Date.now();
+        }
+
+        return this.runCount;
     }
 
     get jumping() {
@@ -57,13 +78,9 @@ class Player {
         return false;
     }
 
-    get jumpX() {
-        return 0;
-    }
-
     get jumpY() {
         if (this.jumpTime) {
-            var a = (Date.now() - this.jumpTime) / 1000;
+            const a = (Date.now() - this.jumpTime) / 1000;
 
             const moveBy = -(1/damping) * Math.pow(a - Math.pow(jumpHeight, 1/2) * Math.pow(damping, 1/2), 2) + jumpHeight;
 
@@ -94,7 +111,19 @@ class Player {
 
         }
 
-        return sprites.runningSlime;
+        if (this.canRun) {
+            if (this.runStep === 0) {
+                return sprites.runningSlime;
+            } else if (this.runStep === 1) {
+                return sprites.runningSlime1;
+            } else if (this.runStep === 2) {
+                return sprites.runningSlime2;
+            } else {
+                return sprites.runningSlime3;
+            }
+        }
+
+        return sprites.normalSlime;
     }
 }
 
@@ -157,21 +186,23 @@ var lastUpdate = Date.now();
 var canvasWidth = 700;
 var canvasHeight = 500;
 
+const fontSize = 4;
+const lineHeight = fontSize + 1.5;
+
 const canvas = createHiDPICanvas(canvasWidth, canvasHeight);
 const ctx = canvas.getContext('2d');
+
+ctx.font = `${fontSize}px Menlo`;
 
 const el = document.getElementById('game');
 el.appendChild(canvas);
 
-const fontSize = 4;
-const lineHeight = fontSize + 1.5;
+const approx = canvasWidth / ctx.measureText('.').width;
 
-var widthL = Math.round(canvasWidth * (414.5 / 1000));
+var widthL = Math.floor(approx);
 var heightL = Math.round(canvasHeight / lineHeight);
 
-console.log(widthL);
-
-const framesPerSecond = 90;
+const framesPerSecond = 120;
 
 const heightFromBottom = 20;
 
@@ -192,7 +223,7 @@ function initMatrix() {
 
         for (let y = 0; y < widthL; y++) {
             matrix[x][y] = '.';
-            colourMatrix[x][y] = '#ff00ff';
+            colourMatrix[x][y] = '#ffffff';
         }
     }
 }
@@ -202,18 +233,46 @@ function printMatrix() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#ffffff'; // pink: #f4c2c2
+    const cache = new Map();
 
-    ctx.font = `${fontSize}px Menlo`;
+    var y = 0;
+    //const approx = ctx.measureText('M').width;
 
-    for (let x = 0; x < heightL; x++) {
-        var c = '';
+    for (let i = 0; i < heightL; i++) {
+        //var c = '';
 
-        for (let y = 0; y < widthL; y++) {
-            c += matrix[x][y];
+        var x = 0;
+
+        for (let j = 0; j < widthL; j++) {
+            const c = matrix[i][j];
+
+            var textSize = undefined;
+
+            if (cache.has(c)) {
+                textSize = cache.get(c);
+            } else {
+                textSize = ctx.measureText(c).width;
+                cache.set(c, textSize);
+            }
+
+            if (c === '.') {
+                x += textSize;
+
+                continue;
+            }
+            
+            const colour = colourMatrix[i][j];
+
+            if (colour)
+                ctx.fillStyle = colour;
+
+            ctx.fillText(c, x, y);
+
+            x += textSize;
         }
 
-        ctx.fillText(c, 0.5, lineHeight * x);
+        //y += 2 * approx;
+        y = lineHeight * i;
     }
 
     const t1 = performance.now();
@@ -253,6 +312,7 @@ function drawPlayer() {
         for (let j = line.length - 1; j >= 0; j--) {
             if (XYInBounds(j + x, i + y) && playerSprite[i][j] !== '.') {
                 matrix[i + y][j + x] = playerSprite[i][j];
+                colourMatrix[i + y][j + x] = '#bfe66a';
             }
         }
     }
@@ -287,15 +347,15 @@ function drawTree(x, y) {
 function randomObjectGeneration() {
     const rng = Math.random();
 
-    if (rng < 1/(framesPerSecond * 0.1)) {
+    if (rng < 1/(framesPerSecond * 1)) {
         obstacles.push(new Tree(widthL - 1, heightL - heightFromBottom));
     }
 }
 
 function keydown(e) {
-    e.preventDefault();
-
     if (e.keyCode === 38 || e.keyCode === 32) {
+        e.preventDefault();
+
         player.jump();
     }
 }
