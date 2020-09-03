@@ -1,6 +1,6 @@
 import * as sprites from '/js/sprites.js';
 
-const jumpHeight = 7;
+const jumpHeight = 15;
 const damping = 1/30;
 
 class Player {
@@ -61,6 +61,29 @@ class Player {
 
         return 0;
     }
+
+    get sprite() {
+        if (this.jumping === true) {
+            // Calculate up or down
+            const a = (Date.now() - this.jumpTime) / 1000;
+
+            const half = Math.pow(jumpHeight, 1/2) * Math.pow(damping, 1/2);
+
+            if (a < half) {
+                if (this.jumpY < jumpHeight * 2/3) {
+                    return sprites.upSlime;
+                }            } else {
+                if (this.jumpY < jumpHeight * 9/10) {
+                    return sprites.downSlime;
+                }
+            }
+
+            return sprites.normalSlime;
+
+        }
+
+        return sprites.runningSlime;
+    }
 }
 
 class Tree {
@@ -95,49 +118,53 @@ var matrix = [];
 var globalId;
 var lastUpdate = Date.now();
 
-var width_l = 95;
-var height_l = 25;
+var canvasWidth = canvas.height;
+var canvasHeight = canvas.height;
+
+var widthL = 140;
+var heightL = 40;
 const framesPerSecond = 60;
 
 var obstacles = []; // [Obstacles()]
-var player = new Player(0, 7);
+var player = new Player(0, 25);
 
 function XYInBounds(x, y) {
-    if (y >= 0 && y <= height_l - 1 && x >= 0 && x <= width_l - 1)
+    if (y >= 0 && y <= heightL - 1 && x >= 0 && x <= widthL - 1)
         return true;
 
     return false;
 }
 
 function initMatrix() {
-    for (let x = 0; x < height_l; x++) {
+    for (let x = 0; x < heightL; x++) {
         matrix[x] = [];
 
-        for (let y = 0; y < width_l; y++) {
+        for (let y = 0; y < widthL; y++) {
             matrix[x][y] = '.';
         }
     }
 }
 
 function printMatrix() {
+    const fontSize = 7;
+
     const t0 = performance.now();
-
-    var c = '';
-
-    for (let x = 0; x < height_l; x++) {
-        for (let y = 0; y < width_l; y++) {
-            c += matrix[x][y];
-        }
-
-        c += '\n';
-    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = "12px Courier New";
+    ctx.fillStyle = '#bfe66a';
+    ctx.font = `${fontSize}px Menlo`;
 
-    ctx.fillText(c, 0, 12);
+
+    for (let x = 0; x < heightL; x++) {
+        var c = '';
+
+        for (let y = 0; y < widthL; y++) {
+            c += matrix[x][y];
+        }
+
+        ctx.fillText(c, 0, (fontSize + 2) * x);
+    }
 
     /*ctx.fillStyle = '#ffffff';
 
@@ -153,7 +180,7 @@ function printMatrix() {
 
     const t1 = performance.now();
 
-    console.log(`Time taken: ${t1 - t0}`);
+    //console.log(`Time taken: ${t1 - t0}`);
 }
 
 function updateMatrix() {
@@ -191,12 +218,14 @@ function drawPlayer(x, y) {
 
     //console.log(sprites.slime);
 
-    for (let i = sprites.slime.length - 1; i >= 0; i--) {
-        const line = sprites.slime[i];
+    const playerSprite = player.sprite;
+
+    for (let i = playerSprite.length - 1; i >= 0; i--) {
+        const line = playerSprite[i];
 
         for (let j = line.length - 1; j >= 0; j--) {
             if (XYInBounds(j + x, i + y)) {
-                matrix[i + y][j + x] = sprites.slime[i][j];
+                matrix[i + y][j + x] = playerSprite[i][j];
             }
         }
     }
@@ -219,8 +248,8 @@ function drawTree(x, y) {
 function randomObjectGeneration() {
     const rng = Math.random();
 
-    if (rng < 1/(framesPerSecond * 2)) {
-        obstacles.push(new Tree(width_l - 1, height_l - 3));
+    if (rng < 1/(framesPerSecond * 1)) {
+        obstacles.push(new Tree(widthL - 1, heightL - 3));
     }
 }
 
