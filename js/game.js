@@ -149,6 +149,7 @@ const createHiDPICanvas = function(w, h, ratio) {
 }
 
 var matrix = [];
+var colourMatrix = [];
 
 var globalId;
 var lastUpdate = Date.now();
@@ -187,9 +188,11 @@ function XYInBounds(x, y) {
 function initMatrix() {
     for (let x = 0; x < heightL; x++) {
         matrix[x] = [];
+        colourMatrix[x] = [];
 
         for (let y = 0; y < widthL; y++) {
             matrix[x][y] = '.';
+            colourMatrix[x][y] = '#ff00ff';
         }
     }
 }
@@ -202,7 +205,6 @@ function printMatrix() {
     ctx.fillStyle = '#ffffff'; // pink: #f4c2c2
 
     ctx.font = `${fontSize}px Menlo`;
-
 
     for (let x = 0; x < heightL; x++) {
         var c = '';
