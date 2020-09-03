@@ -90,15 +90,16 @@ const game = document.getElementById('game');
 
 var matrix = [];
 
-var obstacles = []; // [Obstacles()]
-var player = new Player(5, 12);
-
 var globalId;
 var lastUpdate = Date.now();
 
-var width_l = 50;
-var height_l = 15;
-const framesPerSecond = 24;
+var width_l = 75;
+var height_l = 20;
+const framesPerSecond = 30;
+
+var obstacles = []; // [Obstacles()]
+var player = new Player(8, 17);
+
 
 function XYInBounds(x, y) {
     if (y >= 0 && y <= height_l - 1 && x >= 0 && x <= width_l - 1)
