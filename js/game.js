@@ -52,7 +52,7 @@ class Player {
 
     get runStep() {
         if (this.runTime) {
-            const interval = 75;
+            const interval = 50;
             const states = 4;
 
             const a = (Date.now() - this.runTime);
@@ -127,7 +127,7 @@ class Player {
     }
 }
 
-class Tree {
+class Ground {
     constructor(x, y) {
         this.x = x;
         this.y = y;
@@ -136,6 +136,74 @@ class Tree {
 
         this.baseX = x;
         this.baseY = y;
+
+        this.speed = 75;
+
+        const s = Math.random();
+
+        if (s < 0.6) {
+            this.height = 1;
+        } else if (s < 0.9) {
+            this.height = 2;
+        } else {
+            this.height = 3;
+        }
+    }
+
+    tick() {
+        const now = Date.now();
+
+        if (this.prevTime) {
+            const diff = (now - this.prevTime) / 1000 * this.speed;
+
+            this.x = this.baseX - Math.round(diff);
+        } else {
+            this.prevTime = Date.now();
+        }
+    }
+
+    get sprite() {
+        const sprite = [];
+
+        for (let i = 0; i < this.height; i++) {
+            sprite[i] = [];
+            sprite[i][0] = '|';
+        }
+
+        return sprite;
+    }
+}
+
+class Tree {
+    constructor(x, y) {
+        const s = Math.random();
+
+        if (s < 0.1) {
+            this.height = 3;
+        } else if (s < 0.2) {
+            this.height = 4;
+        } else if (s < 0.4) {
+            this.height = 3;
+        } else if (s < 0.55) {
+            this.height = 6;
+        } else if (s < 0.75){
+            this.height = 7;
+        } else {
+            this.height = 11;
+        }
+
+        if (!x || !y) {
+            this.x = widthL - 1;
+            this.y = heightL - heightFromBottom - this.height;
+        } else {
+            this.x = x;
+            this.y = y;
+        }
+
+        this.prevTime = undefined;
+
+        this.baseX = this.x;
+        this.baseY = this.y;
 
         this.speed = 75;
     }
@@ -150,6 +218,70 @@ class Tree {
         } else {
             this.prevTime = Date.now();
         }
+    }
+
+    get sprite() {
+        const sprite = [];
+
+        sprite[0] = [];
+        sprite[0][1] = '_';
+        sprite[0][2] = '_';
+        sprite[0][3] = '_';
+
+        for (let i = 1; i < this.height; i++) {
+            sprite[i] = [];
+            sprite[i][1] = '|';
+        }
+
+        return sprite;
+    }
+}
+
+// TODO: speed should not be in here..
+class Platform {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+
+        this.prevTime = undefined;
+
+        this.baseX = x;
+        this.baseY = y;
+
+        this.speed = 75;
+
+        const s1 = Math.random();
+        this.height = Math.round(s1 * 30);
+
+        const s2 = Math.random();
+        this.width = Math.round(s2 * 300);
+    }
+
+    tick() {
+        const now = Date.now();
+
+        if (this.prevTime) {
+            const diff = (now - this.prevTime) / 1000 * this.speed;
+
+            this.x = this.baseX - Math.round(diff);
+        } else {
+            this.prevTime = Date.now();
+        }
+    }
+
+    get sprite() {
+        const sprite = [];
+
+        /*for (let i = 0; i < this.height; i++) {
+            sprite[i] = [];
+            sprite[i][0] = '|';
+        }
+
+        for (let i = 0; i < this.width; i++) {
+            sprite[0][i] = '=';
+        }*/
+
+        return sprite;
     }
 }
 
@@ -284,7 +416,7 @@ function updateMatrix() {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         var obstacle = obstacles[i];
 
-        drawTree(obstacle.x, obstacle.y);
+        drawSprite(obstacle.sprite, obstacle.x, obstacle.y);
 
         obstacle.tick();
 
@@ -293,62 +425,43 @@ function updateMatrix() {
         }
     }
 
-    //console.log([...obstacles]);
-
-    drawPlayer();
+    drawSprite(player.sprite, player.x, player.y, '#bfe66a');
 
     player.tick();
 }
 
-function drawPlayer() {
-    const x = player.x;
-    const y = player.y;
-
-    const playerSprite = player.sprite;
-
-    for (let i = playerSprite.length - 1; i >= 0; i--) {
-        const line = playerSprite[i];
+function drawSprite(sprite, x, y, colour) {
+    for (let i = sprite.length - 1; i >= 0; i--) {
+        const line = sprite[i];
 
         for (let j = line.length - 1; j >= 0; j--) {
-            if (XYInBounds(j + x, i + y) && playerSprite[i][j] !== '.') {
-                matrix[i + y][j + x] = playerSprite[i][j];
-                colourMatrix[i + y][j + x] = '#bfe66a';
+            if (XYInBounds(j + x, i + y) && sprite[i][j] && sprite[i][j] !== '.') {
+                matrix[i + y][x + j] = sprite[i][j];
+
+                if (colour)
+                    colourMatrix[i + y][x + j] = colour;
             }
         }
     }
 }
 
-function drawTree(x, y) {
-    if (XYInBounds(x, y)) {
-        matrix[y][x] = '|';
-    }
-
-    if (XYInBounds(x, y - 1)) {
-        matrix[y - 1][x] = '|';
-    } 
-
-    if (XYInBounds(x, y - 2)) {
-        matrix[y - 2][x] = '|';
-    }
-
-    if (XYInBounds(x, y - 3)) {
-        matrix[y - 3][x] = '|';
-    }
-
-    if (XYInBounds(x, y - 4)) {
-        matrix[y - 4][x] = '|';
-    }
-
-    if (XYInBounds(x, y - 5)) {
-        matrix[y - 5][x] = '|';
-    }
-}
-
 function randomObjectGeneration() {
-    const rng = Math.random();
+    var rng = Math.random();
+
+    if (rng < 1/(framesPerSecond * 0.1)) {
+        obstacles.push(new Ground(widthL - 1, heightL - heightFromBottom + 2));
+    }
+
+    var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 1)) {
-        obstacles.push(new Tree(widthL - 1, heightL - heightFromBottom));
+        obstacles.push(new Tree());
+    }
+
+    var rng = Math.random();
+
+    if (rng < 1/(framesPerSecond * 2)) {
+        //obstacles.push(new Platform(widthL - 1, heightL - heightFromBottom));
     }
 }
 
