@@ -10,7 +10,7 @@ class Matrix {
     }
 
     calculateXY(canvasWidth, canvasHeight) {
-        this.widthL = Math.floor(canvasWidth * 412 / 1000);
+        this.widthL = Math.floor(canvasWidth * 612 / 1000);
         this.heightL = Math.round(canvasHeight / lineHeight);
     }
 
@@ -70,26 +70,26 @@ class Matrix {
 }
 
 // From: https://stackoverflow.com/a/15666143/3223010
-const PIXEL_RATIO = (function () {
-    var ctx = document.createElement("canvas").getContext("2d"),
-        dpr = window.devicePixelRatio || 1,
-        bsr = ctx.webkitBackingStorePixelRatio ||
+const createHiDPICanvas = function(w, h) {
+    const c = document.createElement("canvas");
+
+    const ctx = c.getContext("2d"),
+          dpr = window.devicePixelRatio || 1,
+          bsr = ctx.webkitBackingStorePixelRatio ||
               ctx.mozBackingStorePixelRatio ||
               ctx.msBackingStorePixelRatio ||
               ctx.oBackingStorePixelRatio ||
               ctx.backingStorePixelRatio || 1;
 
-    return dpr / bsr;
-})();
+    const ratio = dpr / bsr;
 
-const createHiDPICanvas = function(w, h, ratio) {
-    if (!ratio) { ratio = PIXEL_RATIO; }
-    var c = document.createElement("canvas");
     c.width = w * ratio;
     c.height = h * ratio;
     c.style.width = w + "px";
     c.style.height = h + "px";
-    c.getContext("2d").setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
     return c;
 }
 
@@ -99,7 +99,7 @@ var lastUpdate = Date.now();
 var canvasWidth = 700;
 var canvasHeight = 500;
 
-const fontSize = 4;
+const fontSize = 3;
 const lineHeight = fontSize + 1.5;
 
 const canvas = createHiDPICanvas(canvasWidth, canvasHeight);
@@ -193,7 +193,7 @@ function randomObjectGeneration() {
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 0.1)) {
-        //obstacles.push(new models.Ground(matrix.widthL - 1, heightFromBottom - 2));
+        obstacles.push(new models.Ground(matrix.widthL - 1, heightFromBottom - 2));
     }
 
     var rng = Math.random();
