@@ -324,14 +324,14 @@ class Platform {
     get sprite() {
         const sprite = [];
 
-        /*for (let i = 0; i < this.height; i++) {
+        for (let i = 0; i < 40; i++) {
             sprite[i] = [];
             sprite[i][0] = '|';
         }
 
-        for (let i = 0; i < this.width; i++) {
+        for (let i = 0; i < 10; i++) {
             sprite[0][i] = '=';
-        }*/
+        }
 
         return sprite;
     }

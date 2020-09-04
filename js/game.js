@@ -1,5 +1,74 @@
 import * as models from '/js/models.js';
 
+class Matrix {
+    constructor() {
+        this.grid = [];
+        this.colourGrid = [];
+
+        this.widthL = 100;
+        this.heightL = 100;
+    }
+
+    calculateXY(canvasWidth, canvasHeight) {
+        this.widthL = Math.floor(canvasWidth * 412 / 1000);
+        this.heightL = Math.round(canvasHeight / lineHeight);
+    }
+
+    XYInBounds(x, y) {
+        if (y >= 0 && y <= this.heightL - 1 && x >= 0 && x <= this.widthL - 1)
+            return true;
+
+        return false;
+    }
+
+    initGrid() {
+        for (let x = 0; x < this.heightL; x++) {
+            this.grid[x] = [];
+            this.colourGrid[x] = [];
+
+            for (let y = 0; y < this.widthL; y++) {
+                this.grid[x][y] = '.';
+                this.colourGrid[x][y] = '#ffffff';
+            }
+        }
+    }
+
+    updateSprites(obstacles, player) {
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            var obstacle = obstacles[i];
+
+            this.drawSprite(obstacle.sprite, obstacle.x, obstacle.y);
+            obstacle.tick();
+
+            // TODO
+            if (!this.XYInBounds(obstacle.x, obstacle.y)) {
+                obstacles.splice(i, 1);
+            }
+        }
+
+        this.drawSprite(player.sprite, player.x, player.y, '#bfe66a');
+        player.tick();
+    }
+
+    drawSprite(sprite, x, y, colour) {
+        for (let i = sprite.length - 1; i >= 0; i--) {
+            const line = sprite[i];
+
+            for (let j = line.length - 1; j >= 0; j--) {
+                if (this.XYInBounds(j + x, this.heightL - (i + y) - 1) &&
+                    sprite[sprite.length - i - 1][j] &&
+                    sprite[sprite.length - i - 1][j] !== '.') {
+
+                    this.grid[this.heightL - (i + y) - 1][x + j] = sprite[sprite.length - i - 1][j];
+
+                    if (colour)
+                        this.colourGrid[this.heightL - (i + y) - 1][x + j] = colour;
+                }
+            }
+        }
+    }
+}
+
 // From: https://stackoverflow.com/a/15666143/3223010
 const PIXEL_RATIO = (function () {
     var ctx = document.createElement("canvas").getContext("2d"),
@@ -24,9 +93,6 @@ const createHiDPICanvas = function(w, h, ratio) {
     return c;
 }
 
-var matrix = [];
-var colourMatrix = [];
-
 var globalId;
 var lastUpdate = Date.now();
 
@@ -44,38 +110,19 @@ el.appendChild(canvas);
 
 //const approx = canvasWidth / ctx.measureText('.').width;
 
-var widthL = Math.floor(canvasWidth * 412 / 1000);
-var heightL = Math.round(canvasHeight / lineHeight);
+const matrix = new Matrix();
+matrix.calculateXY(canvasWidth, canvasHeight);
 
-const framesPerSecond = 60;
+const framesPerSecond = 90;
 const printDots = false;
 
 const heightFromBottom = 15;
 
 const obstacles = []; // [Obstacles()]
 const player = new models.Player(15, heightFromBottom);
-const fpsCounter = new models.FPSCounter(200, 60);
+const fpsCounter = new models.FPSCounter(canvasWidth - 50, 11.5);
 
-function XYInBounds(x, y) {
-    if (y >= 0 && y <= heightL - 1 && x >= 0 && x <= widthL - 1)
-        return true;
-
-    return false;
-}
-
-function initMatrix() {
-    for (let x = 0; x < heightL; x++) {
-        matrix[x] = [];
-        colourMatrix[x] = [];
-
-        for (let y = 0; y < widthL; y++) {
-            matrix[x][y] = '.';
-            colourMatrix[x][y] = '#ffffff';
-        }
-    }
-}
-
-function printMatrix() {
+function printMatrix(matrix) {
     const t0 = performance.now();
 
     ctx.font = `${fontSize}px Menlo`;
@@ -87,13 +134,13 @@ function printMatrix() {
     var y = 0;
     //const approx = ctx.measureText('M').width;
 
-    for (let i = 0; i < heightL; i++) {
+    for (let i = 0; i < matrix.heightL; i++) {
         //var c = '';
 
         var x = 0;
 
-        for (let j = 0; j < widthL; j++) {
-            const c = matrix[i][j];
+        for (let j = 0; j < matrix.widthL; j++) {
+            const c = matrix.grid[i][j];
 
             var textSize = undefined;
 
@@ -110,7 +157,7 @@ function printMatrix() {
                 continue;
             }
             
-            const colour = colourMatrix[i][j];
+            const colour = matrix.colourGrid[i][j];
 
             if (colour)
                 ctx.fillStyle = colour;
@@ -129,69 +176,36 @@ function printMatrix() {
     //console.log(`Time taken: ${t1 - t0}`);
 }
 
-function updateMatrix() {
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        var obstacle = obstacles[i];
-
-        drawSprite(obstacle.sprite, obstacle.x, obstacle.y);
-        obstacle.tick();
-
-        // TODO
-        if (!XYInBounds(obstacle.x, obstacle.y)) {
-            obstacles.splice(i, 1);
-        }
-    }
-
-    drawSprite(player.sprite, player.x, player.y, '#bfe66a');
-    player.tick();
-}
 
 function printText(text, size, x, y) {
     ctx.font = `${size}px Menlo`;
+    ctx.fillStyle = '#ffffff';
 
     ctx.fillText(text, x, y);
 }
 
 function updateText() {
-    printText(`FPS: ${fpsCounter.fps}`, 10, canvasWidth - 50, 11.5);
+    printText(`FPS: ${fpsCounter.fps}`, 10, fpsCounter.x, fpsCounter.y);
     fpsCounter.tick();
-}
-
-function drawSprite(sprite, x, y, colour) {
-    for (let i = sprite.length - 1; i >= 0; i--) {
-        const line = sprite[i];
-
-        for (let j = line.length - 1; j >= 0; j--) {
-            if (XYInBounds(j + x, heightL - (i + y) - 1) &&
-                sprite[sprite.length - i - 1][j] &&
-                sprite[sprite.length - i - 1][j] !== '.') {
-
-                matrix[heightL - (i + y) - 1][x + j] = sprite[sprite.length - i - 1][j];
-
-                if (colour)
-                    colourMatrix[heightL - (i + y) - 1][x + j] = colour;
-            }
-        }
-    }
 }
 
 function randomObjectGeneration() {
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 0.1)) {
-        obstacles.push(new models.Ground(widthL - 1, heightFromBottom - 2));
+        //obstacles.push(new models.Ground(matrix.widthL - 1, heightFromBottom - 2));
     }
 
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 1)) {
-        obstacles.push(new models.Tree(widthL - 1, heightFromBottom + 2));
+        //obstacles.push(new models.Tree(matrix.widthL - 1, heightFromBottom + 2));
     }
 
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 2)) {
-        //obstacles.push(new models.Platform(widthL - 1, heightL - heightFromBottom));
+        obstacles.push(new models.Platform(matrix.widthL - 1, heightFromBottom));
     }
 }
 
@@ -210,25 +224,26 @@ function touchstart(e) {
 document.addEventListener('keydown', keydown);
 document.addEventListener('touchstart', touchstart);
 
-function l() {
+function loop() {
     const now = Date.now();
 
-    //if (now - lastUpdate > 1000 / framesPerSecond) {
+    if (now - lastUpdate > 1000 / framesPerSecond) {
         lastUpdate = now;
 
         randomObjectGeneration();
 
-        initMatrix();
-        updateMatrix();
-        printMatrix();
+        matrix.initGrid();
+        matrix.updateSprites(obstacles, player);
+
+        printMatrix(matrix);
 
         updateText();
-    //}
+    }
 
-    //globalId = requestAnimationFrame(l);
+    globalId = requestAnimationFrame(loop);
 }
 
-//globalId = requestAnimationFrame(l);
+//setInterval(loop, Math.round(1000 / framesPerSecond));
+globalId = requestAnimationFrame(loop);
 // cancelAnimationFrame(globalId);
 
-setInterval(l, Math.round(1000 / framesPerSecond));
