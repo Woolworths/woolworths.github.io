@@ -1,6 +1,7 @@
 import * as sprites from '/js/sprites.js';
 
-const UPDATES_PER_SECOND = 60;
+// Ensure this is sync'd with game.js
+const UPDATES_PER_SECOND = 90;
 
 /*class Drawable {
     drawSprite() {
@@ -28,6 +29,9 @@ class Obstacle {
         this.floatX = x;
         this.y = y;
         this.floatY = y;
+
+        this.baseX = x;
+        this.baseY = y;
 
         this.speed = 100;
 
@@ -82,25 +86,72 @@ class FPSCounter {
 const jumpHeight = 40;
 const damping = 1/150;
 
-class Player {
+class Player extends Obstacle {
     constructor(x, y) {
-        this.x = x;
-        this.y = y;
+        super(x, y);
 
-        this.baseX = x;
-        this.baseY = y;
+        this.speed = 0;
 
-        this.jumpTime = undefined;
+        this.jumpTick = 0;
 
-        this.runCount = 0;
-        this.runTime = undefined;
+        this.runTick = 0;
+        this.runStep = 0;
     }
 
     get height() {
         return this.sprite.length;
     }
 
+    get width() {
+        return this.sprite[0].length;
+    }
+
+    get jumping() {
+        return this.jumpTick > 0;
+    }
+
     jump() {
+        if (!this.jumping) {
+            this.jumpTick = 1;
+        }
+    }
+
+    tick() {
+        if (this.jumping) {
+            this.floatY = this.baseY + this.eqn(this.jumpTick);
+
+            this.y = Math.round(this.floatY);
+
+            if (this.y <= this.baseY && this.jumpTick > 1) {
+                this.jumpTick = 0;
+            } else {
+                this.jumpTick++;
+            }
+        }
+
+        if (this.running) {
+            this.runTick += 1;
+            
+            if (this.runTick > 0.07 * UPDATES_PER_SECOND) {
+                this.runStep += 1;
+                this.runStep = this.runStep % 3;
+
+                this.runTick = 0;
+            }
+        }
+    }
+
+    eqn(tick) {
+        const t = (this.jumpTick - 1) / UPDATES_PER_SECOND;
+
+        return -(1/damping) * Math.pow(t - Math.pow(jumpHeight, 1/2) * Math.pow(damping, 1/2), 2) + jumpHeight;
+    }
+
+    get running() {
+        return !this.jumping;
+    }
+
+    /*jump() {
         if (this.jumping === false) {
             console.log('Jumping');
 
@@ -167,21 +218,22 @@ class Player {
         }
 
         return 0;
-    }
+    }*/
 
     get sprite() {
         if (this.jumping === true) {
             // Calculate up or down
-            const a = (Date.now() - this.jumpTime) / 1000;
-
+            const a = this.jumpTick / UPDATES_PER_SECOND;
             const half = Math.pow(jumpHeight, 1/2) * Math.pow(damping, 1/2);
 
+            const jumpY = this.eqn(this.jumpTick);
+
             if (a < half) {
-                if (this.jumpY < jumpHeight * 2/3) {
+                if (jumpY < jumpHeight * 2/3) {
                     return sprites.upSlime;
                 }
             } else {
-                if (this.jumpY < jumpHeight * 9/10) {
+                if (jumpY < jumpHeight * 9/10) {
                     return sprites.downSlime;
                 }
             }
@@ -190,7 +242,7 @@ class Player {
 
         }
 
-        if (this.canRun) {
+        if (this.running) {
             if (this.runStep === 0) {
                 return sprites.runningSlime;
             } else if (this.runStep === 1) {
@@ -209,11 +261,6 @@ class Player {
 class Ground extends Obstacle {
     constructor(x, y) {
         super(x, y);
-
-        this.prevTime = undefined;
-
-        this.baseX = x;
-        this.baseY = y;
 
         const s = Math.random();
 
@@ -258,11 +305,6 @@ class Tree extends Obstacle {
             this.height = 11;
         }
 
-        this.prevTime = undefined;
-
-        this.baseX = this.x;
-        this.baseY = this.y;
-
         this.playerCanCollide = true;
     }
 
@@ -286,11 +328,6 @@ class Tree extends Obstacle {
 class Platform extends Obstacle {
     constructor(x, y) {
         super(x, y);
-
-        this.prevTime = undefined;
-
-        this.baseX = x;
-        this.baseY = y;
 
         this.playerCanCollide = true;
 

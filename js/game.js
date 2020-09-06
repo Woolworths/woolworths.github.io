@@ -114,7 +114,7 @@ el.appendChild(canvas);
 const matrix = new Matrix();
 matrix.calculateXY(canvasWidth, canvasHeight);
 
-var updatesPerSecond = 60;
+var updatesPerSecond = 90;
 var framesPerSecond = 90;
 const printDots = false;
 
