@@ -1,4 +1,5 @@
 import * as sprites from '/js/sprites.js';
+import { updatesPerSecond } from '/js/game.js';
 
 // Ensure this is sync'd with game.js
 const UPDATES_PER_SECOND = 90;
@@ -83,6 +84,23 @@ class FPSCounter {
     }
 }
 
+class ScoreCounter {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+
+        this.score = 0;
+    }
+
+    tick() {
+        this.score++;
+    }
+
+    reset() {
+        this.score = 0;
+    }
+}
+
 const jumpHeight = 40;
 const damping = 1/150;
 
@@ -112,6 +130,8 @@ class Player extends Obstacle {
 
     jump() {
         if (!this.jumping) {
+            console.log('Jumping');
+
             this.jumpTick = 1;
         }
     }
@@ -150,75 +170,6 @@ class Player extends Obstacle {
     get running() {
         return !this.jumping;
     }
-
-    /*jump() {
-        if (this.jumping === false) {
-            console.log('Jumping');
-
-            this.jumpTime = Date.now();
-        }
-    }
-
-    // Update the x and y values
-    tick() {
-        if (this.jumping) {
-            const newY = this.baseY + this.jumpY;
-
-            if (newY > this.baseY) {
-                this.y = newY;
-            } else {
-                this.y = this.baseY;
-                this.jumpTime = null;
-            }
-        } else {
-            this.y = this.baseY;
-            // buggy i think: this.jumpTime = null; could also do a counter like run
-        }
-    }
-
-    get canRun() {
-        return this.baseX === this.x;
-    }
-
-    get runStep() {
-        if (this.runTime) {
-            const interval = 50;
-            const states = 4;
-
-            const a = (Date.now() - this.runTime);
-
-            if (a > interval) {
-                this.runCount++;
-                this.runCount = this.runCount % states;
-
-                this.runTime = Date.now();
-            }
-        } else {
-            this.runTime = Date.now();
-        }
-
-        return this.runCount;
-    }
-
-    get jumping() {
-        if (this.jumpY > 0) {
-            return true;
-        }
-
-        return false;
-    }
-
-    get jumpY() {
-        if (this.jumpTime) {
-            const a = (Date.now() - this.jumpTime) / 1000;
-
-            const moveBy = -(1/damping) * Math.pow(a - Math.pow(jumpHeight, 1/2) * Math.pow(damping, 1/2), 2) + jumpHeight;
-
-            return Math.floor(moveBy);
-        }
-
-        return 0;
-    }*/
 
     get sprite() {
         if (this.jumping === true) {
@@ -271,6 +222,8 @@ class Ground extends Obstacle {
         } else {
             this.height = 3;
         }
+
+        this.y -= this.height;
     }
 
     get sprite() {
@@ -354,4 +307,4 @@ class Platform extends Obstacle {
     }
 }
 
-export { Player, Tree, Ground, Platform, FPSCounter };
+export { Player, Tree, Ground, Platform, ScoreCounter, FPSCounter };

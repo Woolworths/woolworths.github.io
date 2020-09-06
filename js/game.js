@@ -114,15 +114,18 @@ el.appendChild(canvas);
 const matrix = new Matrix();
 matrix.calculateXY(canvasWidth, canvasHeight);
 
-var updatesPerSecond = 90;
+export var updatesPerSecond = 90;
 var framesPerSecond = 90;
 const printDots = false;
 
 const heightFromBottom = 15;
 
-const obstacles = []; // [Obstacles()]
+var obstacles = []; // [Obstacles()]
 const player = new models.Player(50, heightFromBottom);
+const scoreCounter = new models.ScoreCounter(15, 11.5);
 const fpsCounter = new models.FPSCounter(canvasWidth - 50, 11.5);
+// used for the RnG
+export var chaos = 1;
 
 function printMatrix(matrix) {
     const t0 = performance.now();
@@ -189,6 +192,17 @@ function printText(text, size, x, y) {
 function updateText() {
     printText(`FPS: ${fpsCounter.fps}`, 10, fpsCounter.x, fpsCounter.y);
     fpsCounter.tick();
+
+    printText(`Score: ${scoreCounter.score}`, 10, scoreCounter.x, scoreCounter.y);
+    scoreCounter.tick();
+}
+
+function resetGame() {
+    console.log('Resetting game');
+
+    obstacles = [];
+
+    scoreCounter.reset();
 }
 
 function randomObjectGeneration() {
@@ -200,7 +214,7 @@ function randomObjectGeneration() {
 
     var rng = Math.random();
 
-    if (rng < 1/(updatesPerSecond * 1)) {
+    if (rng < 1/(updatesPerSecond * 3)) {
         obstacles.push(new models.Tree(matrix.widthL - 1, heightFromBottom + 2));
     }
 
@@ -226,12 +240,22 @@ function checkIntersects() {
         const obstacle = obstacles[i];
 
         if (obstacle.playerCanCollide) {
+            const xFromPlayer = player.x;
+            const xToPlayer = player.x + player.width;
+            const yFromPlayer = player.y;
+            const yToPlayer = player.y + player.height;
+
+            const xFromObstacle = obstacle.x;
+            const xToObstacle = obstacle.x + obstacle.sprite[0].length;
+            const yFromObstacle = obstacle.y;
+            const yToObstacle = obstacle.y + obstacle.sprite.length;
+
             // TODO: USE AND FOR PIXELS to check actual hitbox
-             if (obstacle.x > player.x &&
-                obstacle.x < player.x + player.sprite[0].length &&
-                obstacle.y > player.y &&
-                obstacle.y < player.y + player.sprite.length) {
-                console.log('PLAYER DEAD');
+            if (xFromPlayer <= xFromObstacle &&
+                xToPlayer >= xToObstacle &&
+                yFromPlayer <= yToObstacle &&
+                yToPlayer >= yFromObstacle) {
+                resetGame();
 
                 break;
             }
