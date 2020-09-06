@@ -33,12 +33,12 @@ class Matrix {
         }
     }
 
-    updateSprites(obstacles, player) {
+    /*updateSprites(timestep, obstacles, player) {
         for (let i = obstacles.length - 1; i >= 0; i--) {
             var obstacle = obstacles[i];
 
             this.drawSprite(obstacle.sprite, obstacle.x, obstacle.y);
-            obstacle.tick();
+            obstacle.tick(timestep);
 
             // TODO
             if (!this.XYInBounds(obstacle.x, obstacle.y)) {
@@ -47,8 +47,8 @@ class Matrix {
         }
 
         this.drawSprite(player.sprite, player.x, player.y, '#bfe66a');
-        player.tick();
-    }
+        player.tick(timestep);
+    }*/
 
     drawSprite(sprite, x, y, colour) {
         for (let i = sprite.length - 1; i >= 0; i--) {
@@ -97,9 +97,6 @@ const createHiDPICanvas = function(w, h) {
     return c;
 }
 
-//var globalId;
-//var lastUpdate = Date.now();
-
 var canvasWidth = 700;
 var canvasHeight = 500;
 
@@ -117,7 +114,7 @@ el.appendChild(canvas);
 const matrix = new Matrix();
 matrix.calculateXY(canvasWidth, canvasHeight);
 
-var updatesPerSecond = 120;
+var updatesPerSecond = 60;
 var framesPerSecond = 90;
 const printDots = false;
 
@@ -197,21 +194,31 @@ function updateText() {
 function randomObjectGeneration() {
     var rng = Math.random();
 
-    if (rng < 1/(framesPerSecond * 0.1)) {
+    if (rng < 1/(updatesPerSecond * 0.1)) {
         obstacles.push(new models.Ground(matrix.widthL - 1, heightFromBottom - 2));
     }
 
     var rng = Math.random();
 
-    if (rng < 1/(framesPerSecond * 1)) {
+    if (rng < 1/(updatesPerSecond * 1)) {
         obstacles.push(new models.Tree(matrix.widthL - 1, heightFromBottom + 2));
     }
 
     var rng = Math.random();
 
-    if (rng < 1/(framesPerSecond * 2)) {
+    if (rng < 1/(updatesPerSecond * 2)) {
         //obstacles.push(new models.Platform(matrix.widthL - 1, heightFromBottom));
     }
+}
+
+function updatePositions() {
+    for (let i = 0; i < obstacles.length; i++) {
+        const obstacle = obstacles[i];
+
+        obstacle.tick();
+    }
+
+    player.tick();
 }
 
 function checkIntersects() {
@@ -220,7 +227,7 @@ function checkIntersects() {
 
         if (obstacle.playerCanCollide) {
             // TODO: USE AND FOR PIXELS to check actual hitbox
-            if (obstacle.x > player.x &&
+             if (obstacle.x > player.x &&
                 obstacle.x < player.x + player.sprite[0].length &&
                 obstacle.y > player.y &&
                 obstacle.y < player.y + player.sprite.length) {
@@ -240,6 +247,21 @@ function checkIntersects() {
     }
 }
 
+function drawSprites() {
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        var obstacle = obstacles[i];
+
+        matrix.drawSprite(obstacle.sprite, obstacle.x, obstacle.y);
+
+        // TODO
+        if (!matrix.XYInBounds(obstacle.x, obstacle.y)) {
+            obstacles.splice(i, 1);
+        }
+    }
+
+    matrix.drawSprite(player.sprite, player.x, player.y, '#bfe66a');
+}
+
 function keydown(e) {
     if (e.keyCode === 38 || e.keyCode === 32) {
         e.preventDefault();
@@ -255,31 +277,44 @@ function touchstart(e) {
 document.addEventListener('keydown', keydown);
 document.addEventListener('touchstart', touchstart);
 
-function renderLoop() {
+//var globalId;
+var lastUpdate = Date.now();
+
+//obstacles.push(new models.Tree(matrix.widthL - 100, heightFromBottom + 2));
+
+function loop() {
     const now = Date.now();
 
-    //if (now - lastUpdate > 1000 / framesPerSecond) {
-        //lastUpdate = now;
+    if (now - lastUpdate > 500) {
+        lastUpdate = now;
+    }
 
+    const updatesNeeded = ((now - lastUpdate) / 1000) * updatesPerSecond;
+
+    for (let i = 0; i < updatesNeeded; i++) {
         randomObjectGeneration();
 
-        matrix.initGrid();
-        matrix.updateSprites(obstacles, player);
+        updatePositions();
+        checkIntersects();
 
-        printMatrix(matrix);
+        lastUpdate += 1000 * 1 / updatesPerSecond;
+    }
 
-        updateText();
+    //if (now - lastUpdate > 1000 / framesPerSecond) {
+    matrix.initGrid();
+    //matrix.updateSprites(obstacles, player);
+
+    drawSprites();
+
+    printMatrix(matrix);
+
+    updateText();
     //}
 
     //globalId = requestAnimationFrame(loop);
 }
 
-function backendLoop() {
-    checkIntersects();
-}
-
-setInterval(renderLoop, Math.round(1000 / framesPerSecond));
-setInterval(backendLoop, Math.round(1000 / updatesPerSecond));
+setInterval(loop, Math.round(1000 / framesPerSecond));
 //globalId = requestAnimationFrame(loop);
 // cancelAnimationFrame(globalId);
 

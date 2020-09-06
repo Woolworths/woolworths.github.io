@@ -1,5 +1,6 @@
 import * as sprites from '/js/sprites.js';
 
+const UPDATES_PER_SECOND = 60;
 
 /*class Drawable {
     drawSprite() {
@@ -22,10 +23,23 @@ import * as sprites from '/js/sprites.js';
 }*/
 
 class Obstacle {
-    constructor() {
+    constructor(x, y) {
+        this.x = x;
+        this.floatX = x;
+        this.y = y;
+        this.floatY = y;
+
         this.speed = 100;
 
         this.playerCanCollide = false;
+    }
+
+    tick() {
+        const diff = (1 / UPDATES_PER_SECOND) * this.speed;
+
+        this.floatX -= diff;
+
+        this.x = Math.round(this.floatX);
     }
 }
 
@@ -194,10 +208,7 @@ class Player {
 
 class Ground extends Obstacle {
     constructor(x, y) {
-        super();
-
-        this.x = x;
-        this.y = y;
+        super(x, y);
 
         this.prevTime = undefined;
 
@@ -215,18 +226,6 @@ class Ground extends Obstacle {
         }
     }
 
-    tick() {
-        const now = Date.now();
-
-        if (this.prevTime) {
-            const diff = (now - this.prevTime) / 1000 * this.speed;
-
-            this.x = this.baseX - Math.round(diff);
-        } else {
-            this.prevTime = Date.now();
-        }
-    }
-
     get sprite() {
         const sprite = [];
 
@@ -241,7 +240,7 @@ class Ground extends Obstacle {
 
 class Tree extends Obstacle {
     constructor(x, y) {
-        super();
+        super(x, y);
 
         const s = Math.random();
 
@@ -259,27 +258,12 @@ class Tree extends Obstacle {
             this.height = 11;
         }
 
-        this.x = x;
-        this.y = y;
-
         this.prevTime = undefined;
 
         this.baseX = this.x;
         this.baseY = this.y;
 
         this.playerCanCollide = true;
-    }
-
-    tick() {
-        const now = Date.now();
-
-        if (this.prevTime) {
-            const diff = (now - this.prevTime) / 1000 * this.speed;
-
-            this.x = this.baseX - Math.round(diff);
-        } else {
-            this.prevTime = Date.now();
-        }
     }
 
     get sprite() {
@@ -301,10 +285,7 @@ class Tree extends Obstacle {
 
 class Platform extends Obstacle {
     constructor(x, y) {
-        super();
-
-        this.x = x;
-        this.y = y;
+        super(x, y);
 
         this.prevTime = undefined;
 
@@ -318,18 +299,6 @@ class Platform extends Obstacle {
 
         const s2 = Math.random();
         this.width = Math.round(s2 * 300);
-    }
-
-    tick() {
-        const now = Date.now();
-
-        if (this.prevTime) {
-            const diff = (now - this.prevTime) / 1000 * this.speed;
-
-            this.x = this.baseX - Math.round(diff);
-        } else {
-            this.prevTime = Date.now();
-        }
     }
 
     get sprite() {
