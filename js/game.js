@@ -69,6 +69,10 @@ class Matrix {
     }
 }
 
+// TODO
+//class Game {
+//}
+
 // From: https://stackoverflow.com/a/15666143/3223010
 const createHiDPICanvas = function(w, h) {
     const c = document.createElement("canvas");
@@ -93,8 +97,8 @@ const createHiDPICanvas = function(w, h) {
     return c;
 }
 
-var globalId;
-var lastUpdate = Date.now();
+//var globalId;
+//var lastUpdate = Date.now();
 
 var canvasWidth = 700;
 var canvasHeight = 500;
@@ -113,13 +117,14 @@ el.appendChild(canvas);
 const matrix = new Matrix();
 matrix.calculateXY(canvasWidth, canvasHeight);
 
-const framesPerSecond = 90;
+var updatesPerSecond = 120;
+var framesPerSecond = 90;
 const printDots = false;
 
 const heightFromBottom = 15;
 
 const obstacles = []; // [Obstacles()]
-const player = new models.Player(15, heightFromBottom);
+const player = new models.Player(50, heightFromBottom);
 const fpsCounter = new models.FPSCounter(canvasWidth - 50, 11.5);
 
 function printMatrix(matrix) {
@@ -199,13 +204,39 @@ function randomObjectGeneration() {
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 1)) {
-        //obstacles.push(new models.Tree(matrix.widthL - 1, heightFromBottom + 2));
+        obstacles.push(new models.Tree(matrix.widthL - 1, heightFromBottom + 2));
     }
 
     var rng = Math.random();
 
     if (rng < 1/(framesPerSecond * 2)) {
-        obstacles.push(new models.Platform(matrix.widthL - 1, heightFromBottom));
+        //obstacles.push(new models.Platform(matrix.widthL - 1, heightFromBottom));
+    }
+}
+
+function checkIntersects() {
+    for (let i = 0; i < obstacles.length; i++) {
+        const obstacle = obstacles[i];
+
+        if (obstacle.playerCanCollide) {
+            // TODO: USE AND FOR PIXELS to check actual hitbox
+            if (obstacle.x > player.x &&
+                obstacle.x < player.x + player.sprite[0].length &&
+                obstacle.y > player.y &&
+                obstacle.y < player.y + player.sprite.length) {
+                console.log('PLAYER DEAD');
+
+                break;
+            }
+
+            /*for (let x = 0; x < player.sprite.length; x++) {
+                for (let y = 0; y < player.sprite[x].length; y++) {
+                    if (player.sprite[x][y] && player.sprite[x][y] !== '.') {
+                        //
+                    }
+                }
+            }*/
+        }
     }
 }
 
@@ -224,11 +255,11 @@ function touchstart(e) {
 document.addEventListener('keydown', keydown);
 document.addEventListener('touchstart', touchstart);
 
-function loop() {
+function renderLoop() {
     const now = Date.now();
 
-    if (now - lastUpdate > 1000 / framesPerSecond) {
-        lastUpdate = now;
+    //if (now - lastUpdate > 1000 / framesPerSecond) {
+        //lastUpdate = now;
 
         randomObjectGeneration();
 
@@ -238,12 +269,17 @@ function loop() {
         printMatrix(matrix);
 
         updateText();
-    }
+    //}
 
-    globalId = requestAnimationFrame(loop);
+    //globalId = requestAnimationFrame(loop);
 }
 
-//setInterval(loop, Math.round(1000 / framesPerSecond));
-globalId = requestAnimationFrame(loop);
+function backendLoop() {
+    checkIntersects();
+}
+
+setInterval(renderLoop, Math.round(1000 / framesPerSecond));
+setInterval(backendLoop, Math.round(1000 / updatesPerSecond));
+//globalId = requestAnimationFrame(loop);
 // cancelAnimationFrame(globalId);
 

@@ -1,7 +1,7 @@
 import * as sprites from '/js/sprites.js';
 
 
-class Drawable {
+/*class Drawable {
     drawSprite() {
         for (let i = this.sprite.length - 1; i >= 0; i--) {
             const line = this.sprite[i];
@@ -18,6 +18,14 @@ class Drawable {
                 }
             }
         }
+    }
+}*/
+
+class Obstacle {
+    constructor() {
+        this.speed = 100;
+
+        this.playerCanCollide = false;
     }
 }
 
@@ -184,8 +192,10 @@ class Player {
     }
 }
 
-class Ground {
+class Ground extends Obstacle {
     constructor(x, y) {
+        super();
+
         this.x = x;
         this.y = y;
 
@@ -193,8 +203,6 @@ class Ground {
 
         this.baseX = x;
         this.baseY = y;
-
-        this.speed = 75;
 
         const s = Math.random();
 
@@ -231,20 +239,22 @@ class Ground {
     }
 }
 
-class Tree {
+class Tree extends Obstacle {
     constructor(x, y) {
+        super();
+
         const s = Math.random();
 
         if (s < 0.1) {
             this.height = 19;
         } else if (s < 0.2) {
-            this.height = 4;
+            this.height = 15;
         } else if (s < 0.4) {
-            this.height = 3;
+            this.height = 25;
         } else if (s < 0.55) {
-            this.height = 6;
+            this.height = 23;
         } else if (s < 0.75){
-            this.height = 7;
+            this.height = 16;
         } else {
             this.height = 11;
         }
@@ -257,7 +267,7 @@ class Tree {
         this.baseX = this.x;
         this.baseY = this.y;
 
-        this.speed = 75;
+        this.playerCanCollide = true;
     }
 
     tick() {
@@ -289,9 +299,10 @@ class Tree {
     }
 }
 
-// TODO: speed should not be in here..
-class Platform {
+class Platform extends Obstacle {
     constructor(x, y) {
+        super();
+
         this.x = x;
         this.y = y;
 
@@ -300,7 +311,7 @@ class Platform {
         this.baseX = x;
         this.baseY = y;
 
-        this.speed = 75;
+        this.playerCanCollide = true;
 
         const s1 = Math.random();
         this.height = Math.round(s1 * 30);
