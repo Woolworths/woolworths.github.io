@@ -33,23 +33,6 @@ class Matrix {
         }
     }
 
-    /*updateSprites(timestep, obstacles, player) {
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-            var obstacle = obstacles[i];
-
-            this.drawSprite(obstacle.sprite, obstacle.x, obstacle.y);
-            obstacle.tick(timestep);
-
-            // TODO
-            if (!this.XYInBounds(obstacle.x, obstacle.y)) {
-                obstacles.splice(i, 1);
-            }
-        }
-
-        this.drawSprite(player.sprite, player.x, player.y, '#bfe66a');
-        player.tick(timestep);
-    }*/
-
     drawSprite(sprite, x, y, colour) {
         for (let i = sprite.length - 1; i >= 0; i--) {
             const line = sprite[i];
@@ -125,6 +108,9 @@ const player = new models.Player(50, heightFromBottom);
 const scoreCounter = new models.ScoreCounter(10, 20);
 const fpsCounter = new models.FPSCounter(canvasWidth - 60, 20);
 
+var gameStarted = false;
+var firstPlay = true;
+
 function printMatrix(matrix) {
     const t0 = performance.now();
 
@@ -180,9 +166,13 @@ function printMatrix(matrix) {
 }
 
 
-function printText(text, size, x, y) {
+function printText(text, size, x, y, colour) {
     ctx.font = `${size}px Menlo`;
-    ctx.fillStyle = '#ffffff';
+
+    if (colour)
+        ctx.fillStyle = colour;
+    else
+        ctx.fillStyle = '#ffffff';
 
     ctx.fillText(text, x, y);
 }
@@ -191,16 +181,38 @@ function updateText() {
     printText(`FPS: ${fpsCounter.fps}`, 11, fpsCounter.x, fpsCounter.y);
     fpsCounter.tick();
 
-    printText(`Score: ${scoreCounter.score}`, 14, scoreCounter.x, scoreCounter.y);
+    if (firstPlay)
+        return;
+
+    printText(`Score: ${scoreCounter.score}`, 14, scoreCounter.x, scoreCounter.y, '#bfe66a');
+
+    if (!gameStarted)
+        return;
+
     scoreCounter.tick();
+}
+
+function startGame() {
+    gameStarted = true;
+    firstPlay = false;
+
+    scoreCounter.reset();
 }
 
 function resetGame() {
     console.log('Resetting game');
 
-    obstacles = [];
+    gameStarted = false;
 
-    scoreCounter.reset();
+    //obstacles = [];
+
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obstacle = obstacles[i];
+
+        if (obstacle.playerCanCollide) {
+            obstacles.splice(i, 1);
+        }
+    }
 }
 
 function randomObjectGeneration() {
@@ -215,6 +227,9 @@ function randomObjectGeneration() {
 
         obstacles.push(g);
     }
+
+    if (!gameStarted)
+        return;
 
     rng = Math.random();
     var odds = (0.7 + 0.3 * chaos) * 1/(updatesPerSecond * 2);
@@ -300,6 +315,8 @@ function drawSprites() {
 
 function keydown(e) {
     if (e.keyCode === 38 || e.keyCode === 32) {
+        startGame();
+
         e.preventDefault();
 
         player.jump();
@@ -307,6 +324,8 @@ function keydown(e) {
 }
 
 function touchstart(e) {
+    startGame();
+
     player.jump();
 }
 
