@@ -91,8 +91,9 @@ class ScoreCounter {
     }
 }
 
-const jumpHeight = 40;
-const damping = 1/150;
+const MAX_JUMP_HEIGHT = 42;
+const MIN_JUMP_HEIGHT = MAX_JUMP_HEIGHT * (2 / 3);
+const DAMPING = 1/150;
 
 class Player extends Obstacle {
     constructor(x, y) {
@@ -106,6 +107,8 @@ class Player extends Obstacle {
 
         this.runTick = 0;
         this.runStep = 0;
+
+        this.toCancelJump = false;
     }
 
     get height() {
@@ -120,25 +123,80 @@ class Player extends Obstacle {
         return this.jumpTick > 0;
     }
 
+    get firstHalfOfJump() {
+        const a = this.jumpTick / UPDATES_PER_SECOND;
+        var half = this.eqnMidpoint();
+
+        if (a < half) {
+            return true;
+        }
+
+        return false;
+    }
+
+    get canCancelJump() {
+        if (this.jumping && this.firstHalfOfJump) {
+            const jumpY = this.eqn(this.jumpTick);
+
+            if (jumpY >= MIN_JUMP_HEIGHT) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     jump() {
         if (!this.jumping) {
             console.log('Jumping');
 
+            this.jumpHeight = MAX_JUMP_HEIGHT;
             this.jumpTick = 1;
         }
     }
 
+    cancelJump() {
+        if (this.firstHalfOfJump) {
+            if (this.canCancelJump) {
+                console.log('Cancelling jump');
+
+                const newJumpHeight = this.floatY - this.baseY;
+                this.jumpHeight = newJumpHeight;
+
+                const half = this.eqnMidpoint();
+
+                this.jumpTick = Math.round(half * UPDATES_PER_SECOND);
+            } else {
+                this.toCancelJump = true;
+            }
+        }
+    }
+
     tick() {
+        if (this.toCancelJump && this.canCancelJump) {
+            this.cancelJump();
+
+            this.toCancelJump = false;
+        }
+
         if (this.jumping) {
-            this.floatY = this.baseY + this.eqn(this.jumpTick);
+            const jumpY = this.eqn(this.jumpTick);
+
+            this.floatY = this.baseY + jumpY;
 
             this.y = Math.round(this.floatY);
 
             if (this.y <= this.baseY && this.jumpTick > 1) {
                 this.jumpTick = 0;
+
+                this.y = this.baseY;
             } else {
                 this.jumpTick++;
             }
+        } else {
+            this.jumpTick = 0;
+
+            this.y = this.baseY;
         }
 
         if (this.running) {
@@ -150,13 +208,19 @@ class Player extends Obstacle {
 
                 this.runTick = 0;
             }
+        } else {
+            this.runTick = 0;
         }
     }
 
     eqn(tick) {
         const t = (this.jumpTick - 1) / UPDATES_PER_SECOND;
 
-        return -(1/damping) * Math.pow(t - Math.pow(jumpHeight, 1/2) * Math.pow(damping, 1/2), 2) + jumpHeight;
+        return -(1/DAMPING) * Math.pow(t - Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING, 1/2), 2) + this.jumpHeight;
+    }
+
+    eqnMidpoint() {
+        return Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING, 1/2);
     }
 
     get running() {
@@ -165,24 +229,19 @@ class Player extends Obstacle {
 
     get sprite() {
         if (this.jumping === true) {
-            // Calculate up or down
-            const a = this.jumpTick / UPDATES_PER_SECOND;
-            const half = Math.pow(jumpHeight, 1/2) * Math.pow(damping, 1/2);
-
             const jumpY = this.eqn(this.jumpTick);
 
-            if (a < half) {
-                if (jumpY < jumpHeight * 2/3) {
+            if (this.firstHalfOfJump) {
+                if (jumpY < this.jumpHeight * 2/3) {
                     return sprites.upSlime;
                 }
             } else {
-                if (jumpY < jumpHeight * 9/10) {
+                if (jumpY < this.jumpHeight * 9/10) {
                     return sprites.downSlime;
                 }
             }
 
             return sprites.normalSlime;
-
         }
 
         if (this.running) {
@@ -222,6 +281,8 @@ class Ground extends Obstacle {
         }
 
         this.y -= this.height;
+
+        this.colour = '#afafaf';
     }
 
     get sprite() {

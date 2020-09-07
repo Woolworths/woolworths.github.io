@@ -1,5 +1,5 @@
 body {
-  color: #bfe66a;
+  color: #eeeeee;
   background-color: #202020;
 }
 
@@ -7,8 +7,8 @@ body {
   max-width: 1100px;
 }
 
-p {
-  color: #eeeeee;
+h1, h2, h3, h4, h5, h6 {
+  color: #bfe66a;
 }
 
 a:link {
@@ -30,7 +30,7 @@ a:active {
 .header {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px dashed;
+  border-bottom: 1px dashed #bfe66a;
 }
 
 .header-list {

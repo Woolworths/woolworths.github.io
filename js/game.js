@@ -348,6 +348,14 @@ function keydown(e) {
     }
 }
 
+function keyup(e) {
+    if (e.keyCode === 38 || e.keyCode === 32) {
+        e.preventDefault();
+
+        player.cancelJump();
+    }
+}
+
 function touchstart(e) {
     startGame();
 
@@ -355,6 +363,7 @@ function touchstart(e) {
 }
 
 document.addEventListener('keydown', keydown);
+document.addEventListener('keyup', keyup);
 document.addEventListener('touchstart', touchstart);
 
 var lastUpdate = Date.now();
