@@ -28,7 +28,7 @@ class Matrix {
 
             for (let y = 0; y < this.widthL; y++) {
                 this.grid[x][y] = '.';
-                this.colourGrid[x][y] = '#ffffff';
+                this.colourGrid[x][y] = fontColour;
             }
         }
     }
@@ -83,7 +83,9 @@ const createHiDPICanvas = function(w, h) {
 var canvasWidth = 700;
 var canvasHeight = 500;
 
+const font = 'Menlo, "Courier New", Courier, monospace';
 const fontSize = 3;
+const fontColour = '#eeeeee';
 const lineHeight = fontSize + 1.5;
 
 const canvas = createHiDPICanvas(canvasWidth, canvasHeight);
@@ -108,13 +110,14 @@ const player = new models.Player(50, heightFromBottom);
 const scoreCounter = new models.ScoreCounter(10, 20);
 const fpsCounter = new models.FPSCounter(canvasWidth - 60, 20);
 
+var showFpsCounter = true;
 var gameStarted = false;
 var firstPlay = true;
 
 function printMatrix(matrix) {
     const t0 = performance.now();
 
-    ctx.font = `${fontSize}px Menlo`;
+    ctx.font = `${fontSize}px ${font}`;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -148,8 +151,10 @@ function printMatrix(matrix) {
             
             const colour = matrix.colourGrid[i][j];
 
-            if (colour)
+            if (colour && gameStarted)
                 ctx.fillStyle = colour;
+            else
+                ctx.fillStyle = fontColour;
 
             ctx.fillText(c, x, y);
 
@@ -167,36 +172,46 @@ function printMatrix(matrix) {
 
 
 function printText(text, size, x, y, colour) {
-    ctx.font = `${size}px Menlo`;
+    ctx.font = `${size}px ${font}`;
 
     if (colour)
         ctx.fillStyle = colour;
     else
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = fontColour;
 
     ctx.fillText(text, x, y);
 }
 
 function updateText() {
-    printText(`FPS: ${fpsCounter.fps}`, 11, fpsCounter.x, fpsCounter.y);
-    fpsCounter.tick();
+    if (showFpsCounter) {
+        printText(`FPS: ${fpsCounter.fps}`, 11, fpsCounter.x, fpsCounter.y);
+        fpsCounter.tick();
+    }
 
-    if (firstPlay)
-        return;
+    if (firstPlay) {
+        printText('Press SPACE or ↑ to play', 14, scoreCounter.x, scoreCounter.y);
+    } else {
+        printText(`Score: ${scoreCounter.score}`, 14, scoreCounter.x, scoreCounter.y, '#bfe66a');
 
-    printText(`Score: ${scoreCounter.score}`, 14, scoreCounter.x, scoreCounter.y, '#bfe66a');
+        if (!gameStarted)
+            return;
 
-    if (!gameStarted)
-        return;
-
-    scoreCounter.tick();
+        scoreCounter.tick();
+    }
 }
 
 function startGame() {
-    gameStarted = true;
-    firstPlay = false;
+    if (!gameStarted) {
+        gameStarted = true;
+        firstPlay = false;
 
-    scoreCounter.reset();
+        scoreCounter.reset();
+
+        gtag('event', 'start', {
+            'event_category' : 'game',
+            'event_label' : 'Game Started'
+        });
+    }
 }
 
 function resetGame() {
@@ -213,6 +228,12 @@ function resetGame() {
             obstacles.splice(i, 1);
         }
     }
+
+    gtag('event', 'finish', {
+        'event_category' : 'game',
+        'event_label' : 'Game Finished',
+        'value': scoreCounter.score
+    });
 }
 
 function randomObjectGeneration() {
@@ -222,7 +243,7 @@ function randomObjectGeneration() {
     var rng = Math.random();
 
     if (rng < 1/(updatesPerSecond * 0.08)) {
-        const g = new models.Ground(matrix.widthL - 1, heightFromBottom - 2);
+        const g = new models.Ground(matrix.widthL - 1, heightFromBottom - 1);
         g.setChaos(chaos);
 
         obstacles.push(g);
@@ -232,7 +253,7 @@ function randomObjectGeneration() {
         return;
 
     rng = Math.random();
-    var odds = (0.7 + 0.3 * chaos) * 1/(updatesPerSecond * 2);
+    var odds = (0.7 + 0.3 * chaos) * 1/(updatesPerSecond * 1);
 
     if (rng < odds) {
         const t = new models.Tree(matrix.widthL - 1, heightFromBottom + 2);
@@ -302,7 +323,7 @@ function drawSprites() {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         var obstacle = obstacles[i];
 
-        matrix.drawSprite(obstacle.sprite, obstacle.x, obstacle.y);
+        matrix.drawSprite(obstacle.sprite, obstacle.x, obstacle.y, obstacle.colour);
 
         // TODO
         if (!matrix.XYInBounds(obstacle.x, obstacle.y)) {
@@ -310,7 +331,7 @@ function drawSprites() {
         }
     }
 
-    matrix.drawSprite(player.sprite, player.x, player.y, '#bfe66a');
+    matrix.drawSprite(player.sprite, player.x, player.y, player.colour);
 }
 
 function keydown(e) {

@@ -98,6 +98,8 @@ class Player extends Obstacle {
     constructor(x, y) {
         super(x, y);
 
+        this.colour = '#bfe66a';
+
         this.speed = 0;
 
         this.jumpTick = 0;
@@ -205,12 +207,18 @@ class Ground extends Obstacle {
 
         const s = Math.random();
 
-        if (s < 0.6) {
+        if (s < 0.55) {
             this.height = 1;
-        } else if (s < 0.9) {
+        } else if (s < 0.65) {
             this.height = 2;
-        } else {
+        } else if (s < 0.8) {
             this.height = 3;
+        } else if (s < 0.85) {
+            this.height = 4;
+        } else if (s < 0.95) {
+            this.height = 5;
+        } else {
+            this.height = 6;
         }
 
         this.y -= this.height;
@@ -221,7 +229,7 @@ class Ground extends Obstacle {
 
         for (let i = 0; i < this.height; i++) {
             sprite[i] = [];
-            sprite[i][0] = '|';
+            sprite[i][0] = '█';
         }
 
         return sprite;
@@ -231,6 +239,8 @@ class Ground extends Obstacle {
 class Tree extends Obstacle {
     constructor(x, y) {
         super(x, y);
+
+        this.colour = '#ff4500';
 
         const s = Math.random();
 
@@ -261,7 +271,7 @@ class Tree extends Obstacle {
 
         for (let i = 1; i < this.height; i++) {
             sprite[i] = [];
-            sprite[i][1] = '|';
+            sprite[i][1] = '█';
         }
 
         return sprite;
