@@ -112,7 +112,7 @@ const fpsCounter = new models.FPSCounter(canvasWidth - 60, 20);
 
 var showFpsCounter = true;
 var gameStarted = false;
-var firstPlay = true;
+var gameEndedAt = undefined;
 
 function printMatrix(matrix) {
     const t0 = performance.now();
@@ -188,7 +188,7 @@ function updateText() {
         fpsCounter.tick();
     }
 
-    if (firstPlay) {
+    if (!gameStarted && gameEndedAt === undefined) {
         printText('Press SPACE or ↑ to play', 14, scoreCounter.x, scoreCounter.y);
     } else {
         printText(`Score: ${scoreCounter.score}`, 14, scoreCounter.x, scoreCounter.y, '#bfe66a');
@@ -202,8 +202,11 @@ function updateText() {
 
 function startGame() {
     if (!gameStarted) {
+        if (gameEndedAt && (Date.now() - gameEndedAt) / 1000 < 1.5) {
+            return;
+        }
+
         gameStarted = true;
-        firstPlay = false;
 
         scoreCounter.reset();
 
@@ -214,10 +217,11 @@ function startGame() {
     }
 }
 
-function resetGame() {
+function endGame() {
     console.log('Resetting game');
 
     gameStarted = false;
+    gameEndedAt = Date.now();
 
     //obstacles = [];
 
@@ -256,7 +260,7 @@ function randomObjectGeneration() {
     var odds = (0.7 + 0.3 * chaos) * 1/(updatesPerSecond * 1);
 
     if (rng < odds) {
-        const t = new models.Tree(matrix.widthL - 1, heightFromBottom + 2);
+        const t = new models.Tree(matrix.widthL - 1, heightFromBottom + 1);
         t.setChaos(chaos);
 
         obstacles.push(t);
@@ -303,7 +307,7 @@ function checkIntersects() {
                 xToPlayer >= xToObstacle &&
                 yFromPlayer <= yToObstacle &&
                 yToPlayer >= yFromObstacle) {
-                resetGame();
+                endGame();
 
                 break;
             }
@@ -353,10 +357,7 @@ function touchstart(e) {
 document.addEventListener('keydown', keydown);
 document.addEventListener('touchstart', touchstart);
 
-//var globalId;
 var lastUpdate = Date.now();
-
-//obstacles.push(new models.Tree(matrix.widthL - 100, heightFromBottom + 2));
 
 function loop() {
     const now = Date.now();
@@ -376,21 +377,14 @@ function loop() {
         lastUpdate += 1000 * 1 / updatesPerSecond;
     }
 
-    //if (now - lastUpdate > 1000 / framesPerSecond) {
     matrix.initGrid();
-    //matrix.updateSprites(obstacles, player);
 
     drawSprites();
 
     printMatrix(matrix);
 
     updateText();
-    //}
-
-    //globalId = requestAnimationFrame(loop);
 }
 
 setInterval(loop, Math.round(1000 / framesPerSecond));
-//globalId = requestAnimationFrame(loop);
-// cancelAnimationFrame(globalId);
 
