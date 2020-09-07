@@ -114,7 +114,7 @@ el.appendChild(canvas);
 const matrix = new Matrix();
 matrix.calculateXY(canvasWidth, canvasHeight);
 
-export var updatesPerSecond = 90;
+var updatesPerSecond = 90;
 var framesPerSecond = 90;
 const printDots = false;
 
@@ -122,10 +122,8 @@ const heightFromBottom = 15;
 
 var obstacles = []; // [Obstacles()]
 const player = new models.Player(50, heightFromBottom);
-const scoreCounter = new models.ScoreCounter(15, 11.5);
-const fpsCounter = new models.FPSCounter(canvasWidth - 50, 11.5);
-// used for the RnG
-export var chaos = 1;
+const scoreCounter = new models.ScoreCounter(10, 20);
+const fpsCounter = new models.FPSCounter(canvasWidth - 60, 20);
 
 function printMatrix(matrix) {
     const t0 = performance.now();
@@ -190,10 +188,10 @@ function printText(text, size, x, y) {
 }
 
 function updateText() {
-    printText(`FPS: ${fpsCounter.fps}`, 10, fpsCounter.x, fpsCounter.y);
+    printText(`FPS: ${fpsCounter.fps}`, 11, fpsCounter.x, fpsCounter.y);
     fpsCounter.tick();
 
-    printText(`Score: ${scoreCounter.score}`, 10, scoreCounter.x, scoreCounter.y);
+    printText(`Score: ${scoreCounter.score}`, 14, scoreCounter.x, scoreCounter.y);
     scoreCounter.tick();
 }
 
@@ -206,19 +204,29 @@ function resetGame() {
 }
 
 function randomObjectGeneration() {
+    // [0, inf] -> [0, 1]
+    const chaos = scoreCounter.chaos;
+
     var rng = Math.random();
 
-    if (rng < 1/(updatesPerSecond * 0.1)) {
-        obstacles.push(new models.Ground(matrix.widthL - 1, heightFromBottom - 2));
+    if (rng < 1/(updatesPerSecond * 0.08)) {
+        const g = new models.Ground(matrix.widthL - 1, heightFromBottom - 2);
+        g.setChaos(chaos);
+
+        obstacles.push(g);
     }
 
-    var rng = Math.random();
+    rng = Math.random();
+    var odds = (0.7 + 0.3 * chaos) * 1/(updatesPerSecond * 2);
 
-    if (rng < 1/(updatesPerSecond * 3)) {
-        obstacles.push(new models.Tree(matrix.widthL - 1, heightFromBottom + 2));
+    if (rng < odds) {
+        const t = new models.Tree(matrix.widthL - 1, heightFromBottom + 2);
+        t.setChaos(chaos);
+
+        obstacles.push(t);
     }
 
-    var rng = Math.random();
+    rng = Math.random();
 
     if (rng < 1/(updatesPerSecond * 2)) {
         //obstacles.push(new models.Platform(matrix.widthL - 1, heightFromBottom));
@@ -226,12 +234,16 @@ function randomObjectGeneration() {
 }
 
 function updatePositions() {
+    const chaos = scoreCounter.chaos;
+
     for (let i = 0; i < obstacles.length; i++) {
         const obstacle = obstacles[i];
 
+        obstacle.setChaos(chaos);
         obstacle.tick();
     }
-
+    
+    player.setChaos(chaos);
     player.tick();
 }
 

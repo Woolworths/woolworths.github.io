@@ -1,28 +1,7 @@
 import * as sprites from '/js/sprites.js';
-import { updatesPerSecond } from '/js/game.js';
 
 // Ensure this is sync'd with game.js
 const UPDATES_PER_SECOND = 90;
-
-/*class Drawable {
-    drawSprite() {
-        for (let i = this.sprite.length - 1; i >= 0; i--) {
-            const line = this.sprite[i];
-
-            for (let j = line.length - 1; j >= 0; j--) {
-                if (XYInBounds(j + x, heightL - (i + y) - 1) &&
-                    this.sprite[this.sprite.length - i - 1][j] &&
-                    this.sprite[this.sprite.length - i - 1][j] !== '.') {
-
-                    matrix[heightL - (i + y) - 1][x + j] = sprite[sprite.length - i - 1][j];
-
-                    if (colour)
-                        colourMatrix[heightL - (i + y) - 1][x + j] = colour;
-                }
-            }
-        }
-    }
-}*/
 
 class Obstacle {
     constructor(x, y) {
@@ -34,17 +13,23 @@ class Obstacle {
         this.baseX = x;
         this.baseY = y;
 
-        this.speed = 100;
+        this.speed = 150;
 
         this.playerCanCollide = false;
+
+        this.chaos = 1;
     }
 
     tick() {
-        const diff = (1 / UPDATES_PER_SECOND) * this.speed;
+        const diff = (1 / UPDATES_PER_SECOND) * this.speed * (1 + this.chaos);
 
         this.floatX -= diff;
 
         this.x = Math.round(this.floatX);
+    }
+
+    setChaos(chaos) {
+        this.chaos = chaos;
     }
 }
 
@@ -98,6 +83,11 @@ class ScoreCounter {
 
     reset() {
         this.score = 0;
+    }
+
+    get chaos() {
+        const e = Math.exp(-3 + 0.0008 * this.score);
+        return e/(1 + e);
     }
 }
 
