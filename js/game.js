@@ -57,10 +57,16 @@ class Matrix {
 //}
 
 // From: https://stackoverflow.com/a/15666143/3223010
-const createHiDPICanvas = function(w, h) {
+function createHiDPICanvas(w, h) {
     const c = document.createElement("canvas");
 
-    const ctx = c.getContext("2d"),
+    resizeCanvas(c, w, h);
+
+    return c;
+}
+
+function resizeCanvas(canvas, width, height) {
+    const ctx = canvas.getContext("2d"),
           dpr = window.devicePixelRatio || 1,
           bsr = ctx.webkitBackingStorePixelRatio ||
               ctx.mozBackingStorePixelRatio ||
@@ -70,25 +76,23 @@ const createHiDPICanvas = function(w, h) {
 
     const ratio = dpr / bsr;
 
-    c.width = w * ratio;
-    c.height = h * ratio;
-    c.style.width = w + "px";
-    c.style.height = h + "px";
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-    return c;
 }
 
-var canvasWidth = 700;
-var canvasHeight = 500;
+const initialCanvasWidth = 700;
+const initialCanvasHeight = 500;
 
 const font = 'Menlo, "Courier New", Courier, monospace';
 const fontSize = 3;
 const fontColour = '#eeeeee';
 const lineHeight = fontSize + 1.5;
 
-const canvas = createHiDPICanvas(canvasWidth, canvasHeight);
+const canvas = createHiDPICanvas(initialCanvasWidth, initialCanvasHeight);
 const ctx = canvas.getContext('2d');
 
 const el = document.getElementById('game');
@@ -97,7 +101,7 @@ el.appendChild(canvas);
 //const approx = canvasWidth / ctx.measureText('.').width;
 
 const matrix = new Matrix();
-matrix.calculateXY(canvasWidth, canvasHeight);
+//matrix.calculateXY(initialCanvasWidth, initialCanvasHeight);
 
 var updatesPerSecond = 90;
 var framesPerSecond = 90;
@@ -108,7 +112,7 @@ const heightFromBottom = 15;
 var obstacles = []; // [Obstacles()]
 const player = new models.Player(50, heightFromBottom);
 const scoreCounter = new models.ScoreCounter(10, 20);
-const fpsCounter = new models.FPSCounter(canvasWidth - 60, 20);
+const fpsCounter = new models.FPSCounter(10, 38);
 
 var showFpsCounter = true;
 var gameStarted = false;
@@ -366,6 +370,17 @@ document.addEventListener('keydown', keydown);
 document.addEventListener('keyup', keyup);
 document.addEventListener('touchstart', touchstart);
 
+function resize(e) {
+    const rect = el.getBoundingClientRect();
+
+    fpsCounter.x = rect.width - 60;
+
+    resizeCanvas(canvas, rect.width, rect.height);
+    matrix.calculateXY(rect.width, rect.height);
+}
+
+window.addEventListener('resize', resize);
+
 var lastUpdate = Date.now();
 
 function loop() {
@@ -395,5 +410,9 @@ function loop() {
     updateText();
 }
 
-setInterval(loop, Math.round(1000 / framesPerSecond));
+window.addEventListener('load', (e) => {
+    resize();
+
+    setInterval(loop, Math.round(1000 / framesPerSecond));
+})
 

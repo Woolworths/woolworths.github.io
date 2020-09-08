@@ -20,8 +20,12 @@ class Obstacle {
         this.chaos = 1;
     }
 
+    get chaosFactor() {
+        return 1 + 2 * this.chaos;
+    }
+
     tick() {
-        const diff = (1 / UPDATES_PER_SECOND) * this.speed * (1 + 2 * this.chaos);
+        const diff = (1 / UPDATES_PER_SECOND) * this.speed * this.chaosFactor;
 
         this.floatX -= diff;
 
@@ -214,7 +218,7 @@ class Player extends Obstacle {
     }
 
     get chaosFactor() {
-        return 1 + 1.2 * this.chaos;
+        return 1 + 2 * this.chaos;
     }
 
     eqn(tick) {
