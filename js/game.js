@@ -1,4 +1,5 @@
 import * as models from '/js/models.js';
+import { weightedRandomDist } from '/js/helpers.js';
 
 class Matrix {
     constructor() {
@@ -16,6 +17,13 @@ class Matrix {
 
     XYInBounds(x, y) {
         if (y >= 0 && y <= this.heightL - 1 && x >= 0 && x <= this.widthL - 1)
+            return true;
+
+        return false;
+    }
+
+    XGreaterThanZero(x, y) {
+        if (y >= 0 && y <= this.heightL - 1 && x >= 0)
             return true;
 
         return false;
@@ -288,23 +296,31 @@ function randomObjectGeneration() {
     var odds = (0.6 + 0.4 * chaos) * 1/updatesPerSecond * 2;
 
     if (prevTreeDistance >= distancePerTree && rng < odds) {
-        const t = new models.Tree(matrix.widthL - 1, heightFromBottom + 1);
-        t.setChaos(chaos);
+        const n = weightedRandomDist(1, 5, 1, 2 * 1/chaos);
 
-        obstacles.push(t);
+        for (let i = 0; i < n; i++) {
+            const t = new models.Tree(matrix.widthL - 1 + i * 8, heightFromBottom + 1, chaos);
 
-        prevTree = t;
+            obstacles.push(t);
+
+            prevTree = t;
+        }
     }
 }
 
 function updatePositions() {
     const chaos = scoreCounter.chaos;
+    //var chaos = 1;
 
     for (let i = 0; i < obstacles.length; i++) {
         const obstacle = obstacles[i];
 
         obstacle.setChaos(chaos);
         obstacle.tick();
+
+        if (!matrix.XGreaterThanZero(obstacle.x, obstacle.y)) {
+            obstacles.splice(i, 1);
+        }
     }
     
     player.setChaos(chaos);
@@ -352,11 +368,6 @@ function drawSprites() {
         var obstacle = obstacles[i];
 
         matrix.drawSprite(obstacle.sprite, obstacle.x, obstacle.y, obstacle.colour);
-
-        // TODO
-        if (!matrix.XYInBounds(obstacle.x, obstacle.y)) {
-            obstacles.splice(i, 1);
-        }
     }
 
     matrix.drawSprite(player.sprite, player.x, player.y, player.colour);

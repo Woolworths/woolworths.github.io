@@ -1,4 +1,5 @@
 import * as sprites from '/js/sprites.js';
+import { weightedRandomDist } from '/js/helpers.js';
 
 // Ensure this is sync'd with game.js
 const UPDATES_PER_SECOND = 90;
@@ -13,7 +14,7 @@ class Obstacle {
         this.baseX = x;
         this.baseY = y;
 
-        this.speed = 150;
+        this.speed = 120;
 
         this.playerCanCollide = false;
 
@@ -90,14 +91,18 @@ class ScoreCounter {
     }
 
     get chaos() {
-        const e = Math.exp(-3 + 0.0008 * this.score);
+        if (this.score === 0)
+            return 0;
+
+        // https://www.desmos.com/calculator/jrgm7z6i0q
+        const e = Math.exp(-1 + 1/3100 * this.score);
         return e/(1 + e);
     }
 }
 
 const MAX_JUMP_HEIGHT = 42;
 const MIN_JUMP_HEIGHT = MAX_JUMP_HEIGHT * (3 / 4);
-const DAMPING = 1/200;
+const DAMPING = 1/165;
 
 class Player extends Obstacle {
     constructor(x, y) {
@@ -217,18 +222,18 @@ class Player extends Obstacle {
         }
     }
 
-    get chaosFactor() {
-        return 1 + 2 * this.chaos;
+    get jumpChaos() {
+        return 1 + 4 * this.chaos;
     }
 
     eqn(tick) {
         const t = (this.jumpTick - 1) / UPDATES_PER_SECOND;
 
-        return -((1/DAMPING) * this.chaosFactor) * Math.pow(t - Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING * (1/this.chaosFactor), 1/2), 2) + this.jumpHeight;
+        return -((1/DAMPING) * this.jumpChaos) * Math.pow(t - Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING * (1/this.jumpChaos), 1/2), 2) + this.jumpHeight;
     }
 
     eqnMidpoint() {
-        return Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING * (1/this.chaosFactor), 1/2);
+        return Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING * (1/this.jumpChaos), 1/2);
     }
 
     get running() {
@@ -272,21 +277,7 @@ class Ground extends Obstacle {
     constructor(x, y) {
         super(x, y);
 
-        const s = Math.random();
-
-        if (s < 0.45) {
-            this.height = 1;
-        } else if (s < 0.65) {
-            this.height = 2;
-        } else if (s < 0.8) {
-            this.height = 3;
-        } else if (s < 0.9) {
-            this.height = 4;
-        } else if (s < 0.95) {
-            this.height = 5;
-        } else {
-            this.height = 6;
-        }
+        this.height = weightedRandomDist(1, 5, 1, 2);
 
         this.y -= this.height;
 
@@ -306,28 +297,20 @@ class Ground extends Obstacle {
 }
 
 class Tree extends Obstacle {
-    constructor(x, y) {
+    constructor(x, y, chaos) {
         super(x, y);
+
+        this.chaos = chaos;
 
         this.colour = '#ff4500';
 
-        const s = Math.random();
-
-        if (s < 0.1) {
-            this.height = 19;
-        } else if (s < 0.2) {
-            this.height = 15;
-        } else if (s < 0.4) {
-            this.height = 25;
-        } else if (s < 0.55) {
-            this.height = 23;
-        } else if (s < 0.75){
-            this.height = 16;
-        } else {
-            this.height = 11;
-        }
+        this.height = weightedRandomDist(15, 30, 20 * this.heightChaos, 10);
 
         this.playerCanCollide = true;
+    }
+
+    get heightChaos() {
+        return 0.6 + 0.4 * this.chaos;
     }
 
     get sprite() {
