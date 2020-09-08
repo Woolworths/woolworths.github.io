@@ -114,7 +114,7 @@ const player = new models.Player(50, heightFromBottom);
 const scoreCounter = new models.ScoreCounter(10, 20);
 const fpsCounter = new models.FPSCounter(10, 38);
 
-var showFpsCounter = true;
+var showFpsCounter = !window.production;
 var gameStarted = false;
 var gameEndedAt = undefined;
 
@@ -214,10 +214,12 @@ function startGame() {
 
         scoreCounter.reset();
 
-        gtag('event', 'start', {
-            'event_category' : 'game',
-            'event_label' : 'Game Started'
-        });
+        if (window.production) {
+            gtag('event', 'start', {
+                'event_category' : 'game',
+                'event_label' : 'Game Started'
+            });
+        }
     }
 }
 
@@ -237,11 +239,13 @@ function endGame() {
         }
     }
 
-    gtag('event', 'finish', {
-        'event_category' : 'game',
-        'event_label' : 'Game Finished',
-        'value': scoreCounter.score
-    });
+    if (window.production) {
+        gtag('event', 'finish', {
+            'event_category' : 'game',
+            'event_label' : 'Game Finished',
+            'value': scoreCounter.score
+        });
+    }
 }
 
 function randomObjectGeneration() {
@@ -385,8 +389,8 @@ function resize(e) {
     fpsCounter.x = rect.width - 60;
     fpsCounter.y = 20;
 
-    resizeCanvas(canvas, rect.width, rect.height);
-    matrix.calculateXY(rect.width, rect.height);
+    resizeCanvas(canvas, rect.width, initialCanvasHeight);
+    matrix.calculateXY(rect.width, initialCanvasHeight);
 }
 
 window.addEventListener('resize', resize);

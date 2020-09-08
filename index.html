@@ -3,6 +3,12 @@ title: Jean Abed
 layout: default
 ---
 
+{% if jekyll.environment == "production" %}
+  <script>window.production = true;</script>
+{% else %}
+  <script>window.production = false;</script>
+{% endif %}
+
 <div id="game"></div>
 <script type="module" src="/js/game.js"></script>
 
