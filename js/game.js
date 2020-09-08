@@ -189,9 +189,9 @@ function updateText() {
     }
 
     if (!gameStarted && gameEndedAt === undefined) {
-        printText('Press SPACE or ↑ to play', 14, scoreCounter.x, scoreCounter.y);
+        printText('Hold SPACE or ↑ to play', 15, scoreCounter.x, scoreCounter.y);
     } else {
-        printText(`Score: ${scoreCounter.score}`, 14, scoreCounter.x, scoreCounter.y, '#bfe66a');
+        printText(`Score: ${scoreCounter.score}`, 15, scoreCounter.x, scoreCounter.y, '#bfe66a');
 
         if (!gameStarted)
             return;
@@ -246,7 +246,7 @@ function randomObjectGeneration() {
 
     var rng = Math.random();
 
-    if (rng < 1/(updatesPerSecond * 0.08)) {
+    if (rng < 1/(updatesPerSecond * 0.05)) {
         const g = new models.Ground(matrix.widthL - 1, heightFromBottom - 1);
         g.setChaos(chaos);
 

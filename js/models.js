@@ -21,7 +21,7 @@ class Obstacle {
     }
 
     tick() {
-        const diff = (1 / UPDATES_PER_SECOND) * this.speed * (1 + this.chaos);
+        const diff = (1 / UPDATES_PER_SECOND) * this.speed * (1 + 2 * this.chaos);
 
         this.floatX -= diff;
 
@@ -93,7 +93,7 @@ class ScoreCounter {
 
 const MAX_JUMP_HEIGHT = 42;
 const MIN_JUMP_HEIGHT = MAX_JUMP_HEIGHT * (2 / 3);
-const DAMPING = 1/150;
+const DAMPING = 1/175;
 
 class Player extends Obstacle {
     constructor(x, y) {
@@ -213,14 +213,18 @@ class Player extends Obstacle {
         }
     }
 
+    get chaosFactor() {
+        return 1 + 1.2 * this.chaos;
+    }
+
     eqn(tick) {
         const t = (this.jumpTick - 1) / UPDATES_PER_SECOND;
 
-        return -(1/DAMPING) * Math.pow(t - Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING, 1/2), 2) + this.jumpHeight;
+        return -((1/DAMPING) * this.chaosFactor) * Math.pow(t - Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING * (1/this.chaosFactor), 1/2), 2) + this.jumpHeight;
     }
 
     eqnMidpoint() {
-        return Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING, 1/2);
+        return Math.pow(this.jumpHeight, 1/2) * Math.pow(DAMPING * (1/this.chaosFactor), 1/2);
     }
 
     get running() {
@@ -266,13 +270,13 @@ class Ground extends Obstacle {
 
         const s = Math.random();
 
-        if (s < 0.55) {
+        if (s < 0.45) {
             this.height = 1;
         } else if (s < 0.65) {
             this.height = 2;
         } else if (s < 0.8) {
             this.height = 3;
-        } else if (s < 0.85) {
+        } else if (s < 0.9) {
             this.height = 4;
         } else if (s < 0.95) {
             this.height = 5;
