@@ -370,7 +370,7 @@ function touchstart(e) {
 
 document.addEventListener('keydown', keydown);
 document.addEventListener('keyup', keyup);
-document.addEventListener('touchstart', touchstart);
+game.addEventListener('touchstart', touchstart);
 
 function resize(e) {
     const rect = el.getBoundingClientRect();
