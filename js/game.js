@@ -101,7 +101,7 @@ el.appendChild(canvas);
 //const approx = canvasWidth / ctx.measureText('.').width;
 
 const matrix = new Matrix();
-//matrix.calculateXY(initialCanvasWidth, initialCanvasHeight);
+matrix.calculateXY(initialCanvasWidth, initialCanvasHeight);
 
 var updatesPerSecond = 90;
 var framesPerSecond = 90;
