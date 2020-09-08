@@ -368,9 +368,16 @@ function touchstart(e) {
     player.jump();
 }
 
+function touchend(e) {
+    e.preventDefault();
+
+    player.cancelJump();
+}
+
 document.addEventListener('keydown', keydown);
 document.addEventListener('keyup', keyup);
 game.addEventListener('touchstart', touchstart);
+game.addEventListener('touchend', touchend);
 
 function resize(e) {
     const rect = el.getBoundingClientRect();
