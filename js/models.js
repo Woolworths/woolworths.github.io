@@ -14,7 +14,7 @@ class Obstacle {
         this.baseX = x;
         this.baseY = y;
 
-        this.speed = 120;
+        this.speed = 130;
 
         this.playerCanCollide = false;
 
@@ -22,7 +22,7 @@ class Obstacle {
     }
 
     get chaosFactor() {
-        return 1 + 2 * this.chaos;
+        return 1 + 2.5 * this.chaos;
     }
 
     tick() {
@@ -95,7 +95,7 @@ class ScoreCounter {
             return 0;
 
         // https://www.desmos.com/calculator/jrgm7z6i0q
-        const e = Math.exp(-1 + 1/3100 * this.score);
+        const e = Math.exp(-1.5 + 1/1200 * this.score);
         return e/(1 + e);
     }
 }

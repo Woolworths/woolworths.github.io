@@ -121,7 +121,7 @@ var obstacles = []; // [Obstacles()]
 var prevGround = undefined;
 var prevTree = undefined;
 var distancePerGround = 1;
-var distancePerTree = 175;
+var distancePerTree = 160;
 
 const player = new models.Player(50, heightFromBottom);
 const scoreCounter = new models.ScoreCounter(10, 20);
