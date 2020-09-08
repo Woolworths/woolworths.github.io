@@ -363,6 +363,8 @@ function keyup(e) {
 function touchstart(e) {
     startGame();
 
+    e.preventDefault();
+
     player.jump();
 }
 
@@ -374,6 +376,7 @@ function resize(e) {
     const rect = el.getBoundingClientRect();
 
     fpsCounter.x = rect.width - 60;
+    fpsCounter.y = 20;
 
     resizeCanvas(canvas, rect.width, rect.height);
     matrix.calculateXY(rect.width, rect.height);
