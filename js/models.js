@@ -188,7 +188,7 @@ class Player extends Obstacle {
 
             this.floatY = this.baseY + jumpY;
 
-            this.y = Math.round(this.floatY);
+            this.y = Math.floor(this.floatY);
 
             if (this.y <= this.baseY && this.jumpTick > 1) {
                 this.jumpTick = 0;

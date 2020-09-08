@@ -267,7 +267,7 @@ function randomObjectGeneration() {
 
     var rng = Math.random();
 
-    if (prevGroundDistance >= distancePerGround && rng < 1/(updatesPerSecond * 0.05)) {
+    if (prevGroundDistance >= distancePerGround && rng < 1/updatesPerSecond * 25) {
         const g = new models.Ground(matrix.widthL - 1, heightFromBottom - 1);
         g.setChaos(chaos);
 
@@ -285,7 +285,7 @@ function randomObjectGeneration() {
         var prevTreeDistance = distancePerTree + 1;
 
     rng = Math.random();
-    var odds = (0.4 + 0.6 * chaos) * 1/updatesPerSecond * 2;
+    var odds = (0.6 + 0.4 * chaos) * 1/updatesPerSecond * 2;
 
     if (prevTreeDistance >= distancePerTree && rng < odds) {
         const t = new models.Tree(matrix.widthL - 1, heightFromBottom + 1);
@@ -401,6 +401,9 @@ game.addEventListener('touchend', touchend);
 
 function resize(e) {
     const rect = el.getBoundingClientRect();
+
+    prevGround = undefined;
+    prevTree = undefined;
 
     fpsCounter.x = rect.width - 60;
     fpsCounter.y = 20;
