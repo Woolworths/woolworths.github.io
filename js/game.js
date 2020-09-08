@@ -110,6 +110,11 @@ const printDots = false;
 const heightFromBottom = 15;
 
 var obstacles = []; // [Obstacles()]
+var prevGround = undefined;
+var prevTree = undefined;
+var distancePerGround = 1;
+var distancePerTree = 150;
+
 const player = new models.Player(50, heightFromBottom);
 const scoreCounter = new models.ScoreCounter(10, 20);
 const fpsCounter = new models.FPSCounter(10, 38);
@@ -229,6 +234,9 @@ function endGame() {
     gameStarted = false;
     gameEndedAt = Date.now();
 
+    prevGround = undefined;
+    prevTree = undefined;
+
     //obstacles = [];
 
     for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -252,32 +260,40 @@ function randomObjectGeneration() {
     // [0, inf] -> [0, 1]
     const chaos = scoreCounter.chaos;
 
+    if (prevGround)
+        var prevGroundDistance = matrix.widthL - prevGround.x - 1;
+    else
+        var prevGroundDistance = distancePerGround + 1;
+
     var rng = Math.random();
 
-    if (rng < 1/(updatesPerSecond * 0.05)) {
+    if (prevGroundDistance >= distancePerGround && rng < 1/(updatesPerSecond * 0.05)) {
         const g = new models.Ground(matrix.widthL - 1, heightFromBottom - 1);
         g.setChaos(chaos);
 
         obstacles.push(g);
+
+        prevGround = g;
     }
 
     if (!gameStarted)
         return;
 
-    rng = Math.random();
-    var odds = (0.7 + 0.3 * chaos) * 1/(updatesPerSecond * 1);
+    if (prevTree)
+        var prevTreeDistance = matrix.widthL - prevTree.x - 1;
+    else
+        var prevTreeDistance = distancePerTree + 1;
 
-    if (rng < odds) {
+    rng = Math.random();
+    var odds = (0.4 + 0.6 * chaos) * 1/updatesPerSecond * 2;
+
+    if (prevTreeDistance >= distancePerTree && rng < odds) {
         const t = new models.Tree(matrix.widthL - 1, heightFromBottom + 1);
         t.setChaos(chaos);
 
         obstacles.push(t);
-    }
 
-    rng = Math.random();
-
-    if (rng < 1/(updatesPerSecond * 2)) {
-        //obstacles.push(new models.Platform(matrix.widthL - 1, heightFromBottom));
+        prevTree = t;
     }
 }
 
@@ -360,7 +376,7 @@ function keyup(e) {
     if (e.keyCode === 38 || e.keyCode === 32) {
         e.preventDefault();
 
-        player.cancelJump();
+        //player.cancelJump();
     }
 }
 
@@ -375,7 +391,7 @@ function touchstart(e) {
 function touchend(e) {
     e.preventDefault();
 
-    player.cancelJump();
+    //player.cancelJump();
 }
 
 document.addEventListener('keydown', keydown);

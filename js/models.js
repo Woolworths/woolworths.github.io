@@ -96,8 +96,8 @@ class ScoreCounter {
 }
 
 const MAX_JUMP_HEIGHT = 42;
-const MIN_JUMP_HEIGHT = MAX_JUMP_HEIGHT * (2 / 3);
-const DAMPING = 1/175;
+const MIN_JUMP_HEIGHT = MAX_JUMP_HEIGHT * (3 / 4);
+const DAMPING = 1/200;
 
 class Player extends Obstacle {
     constructor(x, y) {
@@ -290,7 +290,7 @@ class Ground extends Obstacle {
 
         this.y -= this.height;
 
-        this.colour = '#afafaf';
+        this.colour = '#ffdead';
     }
 
     get sprite() {
