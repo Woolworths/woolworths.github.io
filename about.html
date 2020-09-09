@@ -6,3 +6,15 @@ layout: default
 <h2>About</h2>
 
 <p>Fill with information later...</p>
+
+<!-- unhackable method: from base64 import b64encode; b64encode(b64encode(b64encode(b'mail@example.com'))) -->
+<a href="javascript:void(0);"
+    rel="nofollow"
+    data-contact="WVcxV2FHSnBOV2haYlZaclRWVkNibUpYUm5CaVF6VnFZakl3UFE9PQ=="
+    onmouseover="this.a = encodeURI(atob(this.dataset.contact));"
+    ontouchstart="this.a = encodeURI(atob(this.dataset.contact));"
+    onfocusin="this.dataset.b = encodeURI(atob(decodeURI(this.a)));"
+    onclick="window.location.href = 'mailto:' + atob(decodeURI(this.dataset.b)); if(window.production) {gtag('event', 'clicked_contact', { 'event_category' : 'main', 'event_label' : 'Clicked Contact Link' });}">
+    Contact
+</a>
+
