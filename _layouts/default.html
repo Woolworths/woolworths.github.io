@@ -9,7 +9,11 @@
         gtag('js', new Date());
 
         gtag('config', 'UA-177378949-1');
+
+        window.production = true;
       </script>
+    {% else %}
+      <script>window.production = false;</script>
     {% endif %}
 
     <meta charset="utf-8">
