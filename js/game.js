@@ -206,7 +206,7 @@ function updateText() {
     }
 
     if (!gameStarted && gameEndedAt === undefined) {
-        printText('Hold SPACE or ↑ to play', 15, scoreCounter.x, scoreCounter.y);
+        //printText('Press SPACE or ↑ to play', 15, scoreCounter.x, scoreCounter.y);
     } else {
         printText(`Score: ${scoreCounter.score}`, 15, scoreCounter.x, scoreCounter.y, '#bfe66a');
 
