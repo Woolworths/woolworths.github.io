@@ -31,43 +31,46 @@
     <div class="container-fluid main">
       <div class="container-fluid header">
         <h1 class="typer" data-initial-delay="200" data-initial-word="> " data-delay="75" data-word="Jean Abed">Jean Abed</h1>
-        <script>
-          const el = document.querySelector('.typer');
 
-          const initialDelay = el.dataset.initialDelay;
-          const initialWord = el.dataset.initialWord;
+        {% if page.name == "index.html" %}
+          <script>
+            const el = document.querySelector('.typer');
 
-          if (initialDelay && initialWord) {
-            el.innerText = initialWord;
+            const initialDelay = el.dataset.initialDelay;
+            const initialWord = el.dataset.initialWord;
 
-            setTimeout(() => {
+            if (initialDelay && initialWord) {
+              el.innerText = initialWord;
+
+              setTimeout(() => {
+                type();
+              }, initialDelay);
+            } else {
               type();
-            }, initialDelay);
-          } else {
-            type();
-          }
-
-          function type() {
-            const delay = el.dataset.delay;
-            const word = el.dataset.word;
-
-            if (delay && word) {
-              var counter = 1;
-
-              const intervalId = setInterval(() => {
-                el.innerText = word.substring(0, counter);
-
-                counter++;
-
-                if (counter > word.length) {
-                  clearInterval(intervalId);
-                }
-
-                console.log(intervalId);
-              }, delay);
             }
-          }
-        </script>
+
+            function type() {
+              const delay = el.dataset.delay;
+              const word = el.dataset.word;
+
+              if (delay && word) {
+                var counter = 1;
+
+                const intervalId = setInterval(() => {
+                  el.innerText = word.substring(0, counter);
+
+                  counter++;
+
+                  if (counter > word.length) {
+                    clearInterval(intervalId);
+                  }
+
+                  console.log(intervalId);
+                }, delay);
+              }
+            }
+          </script>
+        {% endif %}
 
         <nav>
           <ul class="list-inline header-list">
