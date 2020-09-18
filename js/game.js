@@ -92,15 +92,15 @@ function resizeCanvas(canvas, width, height) {
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
-const initialCanvasWidth = 700;
-const initialCanvasHeight = 500;
+var canvasWidth = 700;
+var canvasHeight = 500;
 
 const font = 'Menlo, "Courier New", Courier, monospace';
 const fontSize = 3;
 const fontColour = '#eeeeee';
 const lineHeight = fontSize + 1.5;
 
-const canvas = createHiDPICanvas(initialCanvasWidth, initialCanvasHeight);
+const canvas = createHiDPICanvas(canvasWidth, canvasHeight);
 const ctx = canvas.getContext('2d');
 
 const el = document.getElementById('game');
@@ -109,7 +109,7 @@ el.appendChild(canvas);
 //const approx = canvasWidth / ctx.measureText('.').width;
 
 const matrix = new Matrix();
-matrix.calculateXY(initialCanvasWidth, initialCanvasHeight);
+matrix.calculateXY(canvasWidth, canvasHeight);
 
 var updatesPerSecond = 90;
 var framesPerSecond = 90;
@@ -129,7 +129,9 @@ const fpsCounter = new models.FPSCounter(10, 38);
 
 var showFpsCounter = !window.production;
 var gameStarted = false;
+var gamePaused = false;
 var gameEndedAt = undefined;
+const endingSeconds = 1;
 
 function printMatrix(matrix) {
     const t0 = performance.now();
@@ -168,7 +170,7 @@ function printMatrix(matrix) {
             
             const colour = matrix.colourGrid[i][j];
 
-            if (colour && gameStarted)
+            if (colour && (gameStarted || gamePaused))
                 ctx.fillStyle = colour;
             else
                 ctx.fillStyle = fontColour;
@@ -200,30 +202,40 @@ function printText(text, size, x, y, colour) {
 }
 
 function updateText() {
+    fpsCounter.x = canvasWidth - 60;
+    fpsCounter.y = 20;
+
     if (showFpsCounter) {
         printText(`FPS: ${fpsCounter.fps}`, 11, fpsCounter.x, fpsCounter.y);
         fpsCounter.tick();
     }
 
-    if (!gameStarted && gameEndedAt === undefined) {
-        //printText('Press SPACE or ↑ to play', 15, scoreCounter.x, scoreCounter.y);
-    } else {
-        printText(`Score: ${scoreCounter.score}`, 15, scoreCounter.x, scoreCounter.y, '#bfe66a');
+    //printText('Press SPACE or ↑ to play', 15, scoreCounter.x, scoreCounter.y);
+    if (gameEndedAt || gameStarted) {
+        printText(`${scoreCounter.score.toLocaleString('en-US', { minimumIntegerDigits: 5, useGrouping:false })}`, 16, scoreCounter.x, scoreCounter.y, '#bfe66a');
 
-        if (!gameStarted)
-            return;
+        if (gamePaused) {
+            console.log(canvas.width / 2);
+            printText('GAME OVER', 30, canvasWidth / 2 - 80, 30, '#bfe66a');
+        } else {
+            if (!gameStarted)
+                return;
 
-        scoreCounter.tick();
+            scoreCounter.tick();
+        }
     }
 }
 
 function startGame() {
     if (!gameStarted) {
-        if (gameEndedAt && (Date.now() - gameEndedAt) / 1000 < 1.5) {
+        if (gameEndedAt && (Date.now() - gameEndedAt) / 1000 < endingSeconds) {
             return;
         }
 
+        removeAllObstacles();
+
         gameStarted = true;
+        gamePaused = false;
 
         scoreCounter.reset();
 
@@ -236,17 +248,7 @@ function startGame() {
     }
 }
 
-function endGame() {
-    console.log('Resetting game');
-
-    gameStarted = false;
-    gameEndedAt = Date.now();
-
-    prevGround = undefined;
-    prevTree = undefined;
-
-    //obstacles = [];
-
+function removeAllObstacles() {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obstacle = obstacles[i];
 
@@ -254,6 +256,19 @@ function endGame() {
             obstacles.splice(i, 1);
         }
     }
+}
+
+function endGame() {
+    console.log('Resetting game');
+
+    gamePaused = true;
+    gameStarted = false;
+    gameEndedAt = Date.now();
+
+    prevGround = undefined;
+    prevTree = undefined;
+
+    //obstacles = [];
 
     if (window.production) {
         gtag('event', 'finish', {
@@ -347,9 +362,34 @@ function checkIntersects() {
                 xToPlayer >= xToObstacle &&
                 yFromPlayer <= yToObstacle &&
                 yToPlayer >= yFromObstacle) {
-                endGame();
 
-                break;
+                if (!player.sprite && !obstacle.sprite) {
+                    endGame();
+
+                    return;
+                }
+
+                const x2Diff = xToPlayer - xToObstacle;
+                const y1Diff = - yFromPlayer + yToObstacle;
+                
+                for (let x = 0; x < x2Diff; x++) {
+                    for (let y = 0; y < y1Diff; y++) {
+                        const pixelX = player.width - x;
+                        const pixelY = player.height - y - 1;
+
+                        if (pixelX < 0 || pixelY < 0 || pixelX > player.width || pixelY >= player.height) {
+                            console.log('Error in checking intersects');
+                            
+                            break;
+                        }
+
+                        if (player.sprite[pixelY][pixelX] !== '.') {
+                            endGame();
+
+                            return;
+                        }
+                    }
+                }
             }
 
             /*for (let x = 0; x < player.sprite.length; x++) {
@@ -363,6 +403,10 @@ function checkIntersects() {
     }
 }
 
+function drawPlayer() {
+    matrix.drawSprite(player.sprite, player.x, player.y, player.colour);
+}
+
 function drawSprites() {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         var obstacle = obstacles[i];
@@ -370,7 +414,7 @@ function drawSprites() {
         matrix.drawSprite(obstacle.sprite, obstacle.x, obstacle.y, obstacle.colour);
     }
 
-    matrix.drawSprite(player.sprite, player.x, player.y, player.colour);
+    drawPlayer();
 }
 
 function keydown(e) {
@@ -379,7 +423,8 @@ function keydown(e) {
 
         e.preventDefault();
 
-        player.jump();
+        if (!gamePaused)
+            player.jump();
     }
 }
 
@@ -396,7 +441,8 @@ function touchstart(e) {
 
     e.preventDefault();
 
-    player.jump();
+    if (!gamePaused)
+        player.jump();
 }
 
 function touchend(e) {
@@ -413,14 +459,17 @@ game.addEventListener('touchend', touchend);
 function resize(e) {
     const rect = el.getBoundingClientRect();
 
+    canvasWidth = rect.width;
+    //canvasHeight = rect.height;
+
     prevGround = undefined;
     prevTree = undefined;
 
-    fpsCounter.x = rect.width - 60;
-    fpsCounter.y = 20;
+    //fpsCounter.x = canvasWidth - 60;
+    //fpsCounter.y = 20;
 
-    resizeCanvas(canvas, rect.width, initialCanvasHeight);
-    matrix.calculateXY(rect.width, initialCanvasHeight);
+    resizeCanvas(canvas, canvasWidth, canvasHeight);
+    matrix.calculateXY(canvasWidth, canvasHeight);
 }
 
 window.addEventListener('resize', resize);
@@ -430,19 +479,25 @@ var lastUpdate = Date.now();
 function loop() {
     const now = Date.now();
 
-    if (now - lastUpdate > 500) {
-        lastUpdate = now;
-    }
+    if (!gamePaused) {
+        if (now - lastUpdate > 500) {
+            lastUpdate = now;
+        }
 
-    const updatesNeeded = ((now - lastUpdate) / 1000) * updatesPerSecond;
+        const updatesNeeded = ((now - lastUpdate) / 1000) * updatesPerSecond;
 
-    for (let i = 0; i < updatesNeeded; i++) {
-        randomObjectGeneration();
+        for (let i = 0; i < updatesNeeded; i++) {
+            randomObjectGeneration();
 
-        updatePositions();
-        checkIntersects();
+            updatePositions();
+            checkIntersects();
 
-        lastUpdate += 1000 * 1 / updatesPerSecond;
+            if (gamePaused) {
+                break;
+            }
+
+            lastUpdate += 1000 * 1 / updatesPerSecond;
+        }
     }
 
     matrix.initGrid();
