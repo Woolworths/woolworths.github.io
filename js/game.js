@@ -216,7 +216,7 @@ function updateText() {
 
         if (gamePaused) {
             console.log(canvas.width / 2);
-            printText('GAME OVER', 30, canvasWidth / 2 - 80, 30, '#bfe66a');
+            printText('GAME OVER', 16, canvasWidth / 2 - 45, 20, '#bfe66a');
         } else {
             if (!gameStarted)
                 return;

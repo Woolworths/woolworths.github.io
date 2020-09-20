@@ -211,9 +211,9 @@ class Player extends Obstacle {
         if (this.running) {
             this.runTick += 1;
             
-            if (this.runTick > 0.07 * UPDATES_PER_SECOND) {
+            if (this.runTick > 0.06 * UPDATES_PER_SECOND) { // 0.07
                 this.runStep += 1;
-                this.runStep = this.runStep % 3;
+                this.runStep = this.runStep % 4;
 
                 this.runTick = 0;
             }
@@ -259,13 +259,13 @@ class Player extends Obstacle {
 
         if (this.running) {
             if (this.runStep === 0) {
-                return sprites.runningSlime;
-            } else if (this.runStep === 1) {
                 return sprites.runningSlime1;
+            } else if (this.runStep === 1) {
+                return sprites.runningSlime;
             } else if (this.runStep === 2) {
-                return sprites.runningSlime2;
-            } else {
                 return sprites.runningSlime3;
+            } else {
+                return sprites.runningSlime;
             }
         }
 
