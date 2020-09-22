@@ -215,7 +215,6 @@ function updateText() {
         printText(`${scoreCounter.score.toLocaleString('en-US', { minimumIntegerDigits: 5, useGrouping:false })}`, 16, scoreCounter.x, scoreCounter.y, '#bfe66a');
 
         if (gamePaused) {
-            console.log(canvas.width / 2);
             printText('GAME OVER', 16, canvasWidth / 2 - 45, 20, '#bfe66a');
         } else {
             if (!gameStarted)
