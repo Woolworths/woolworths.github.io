@@ -59,6 +59,10 @@ a:active {
   content: "";
 }
 
+.footer {
+  padding-top: 1rem;
+}
+
 .content {
   padding-top: 1.5rem;
 }

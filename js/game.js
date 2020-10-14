@@ -93,7 +93,7 @@ function resizeCanvas(canvas, width, height) {
 }
 
 var canvasWidth = 700;
-var canvasHeight = 500;
+var canvasHeight = 420;
 
 const font = 'Menlo, "Courier New", Courier, monospace';
 const fontSize = 3;

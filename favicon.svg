@@ -1,10 +1,10 @@
-<svg width="128" height="128" xmlns="http://www.w3.org/2000/svg">
+<svg width="144" height="144" xmlns="http://www.w3.org/2000/svg">
   <style>
   .favicon {
-    font: bold 128px sans-serif;
+    font: bold 144px sans-serif;
     fill: green;
   }
   </style>
-  <text x="0" y="100" class="favicon">~</text>
-  <text x="80" y="113" class="favicon">/</text>
+  <text x="0" y="110" class="favicon">~</text>
+  <text x="95" y="125" class="favicon">/</text>
 </svg>
