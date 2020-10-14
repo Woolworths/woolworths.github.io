@@ -5,17 +5,21 @@ layout: default
 
 <h2>About</h2>
 
-<p>Fill with information later...</p>
+<p>Computer science student... Here's my <a href="https://www.linkedin.com/in/jeanabed/" target="_blank">LinkedIn</a>.</p>
 
 <!-- unhackable method: from base64 import b64encode; b64encode(b64encode(b'mail@example.com')) -->
 <script>setTimeout(() => window.superSecret = true, 350);</script>
-<a href="javascript:void(0);"
-    rel="nofollow"
-    data-contacta="YW1WaGJpNWhZbVZrT"
-    data-contactb="VVCbmJXRnBiQzVqYjIwPQ"
-    onmouseover="this.a = encodeURI(atob(this.dataset.contacta + this.dataset.contactb + '=='));"
-    ontouchstart="this.a = encodeURI(atob(this.dataset.contacta + this.dataset.contactb + '=='));"
-    onclick="if(window.superSecret){window.location.href='mailto:'+atob(decodeURI(this.a));if(window.production){gtag('event','clicked_contact',{'event_category':'main','event_label':'Clicked Contact Link'});}}">
-    Contact
-</a>
 
+<ul class="list-unstyled">
+    <li>
+        <a href="javascript:void(0); // send me an email"
+            rel="nofollow"
+            data-contacta="YW1WaGJpNWhZbVZrT"
+            data-contactb="VVCbmJXRnBiQzVqYjIwPQ"
+            onmouseover="this.a=encodeURI(atob(this.dataset.contacta+this.dataset.contactb+'=='));"
+            ontouchstart="this.a=encodeURI(atob(this.dataset.contacta+this.dataset.contactb+'=='));"
+            onclick="if(window.superSecret){window.location.href='mailto:'+atob(decodeURI(this.a));if(window.production){gtag('event','clicked_contact',{'event_category':'main','event_label':'Clicked Contact Link'});}}">
+            Contact
+        </a>
+    </li>
+<ul>
