@@ -211,9 +211,9 @@ class Player extends Obstacle {
         if (this.running) {
             this.runTick += 1;
             
-            if (this.runTick > 0.05 * UPDATES_PER_SECOND) { // 0.07
+            if (this.runTick > 0.1 * UPDATES_PER_SECOND) { // 0.07
                 this.runStep += 1;
-                this.runStep = this.runStep % 4;
+                this.runStep = this.runStep % 5;
 
                 this.runTick = 0;
             }
