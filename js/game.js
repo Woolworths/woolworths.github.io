@@ -104,6 +104,7 @@ const canvas = createHiDPICanvas(canvasWidth, canvasHeight);
 const ctx = canvas.getContext('2d');
 
 const el = document.getElementById('game');
+el.innerHTML = '';
 el.appendChild(canvas);
 
 //const approx = canvasWidth / ctx.measureText('.').width;
